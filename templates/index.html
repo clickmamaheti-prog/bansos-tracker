@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>GPS Tracker — Delivery Tracking</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#667eea;--secondary:#764ba2;--dark:#0f0c29;--text:#e2e8f0;--text2:#94a3b8;--surface:rgba(255,255,255,0.05);--border:rgba(255,255,255,0.1)}
+html{font-size:16px}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);
+  min-height:100vh;color:#fff;
+  -webkit-font-smoothing:antialiased;
+}
+/* Mobile-first container */
+.container{
+  padding:24px 16px 40px;
+  max-width:100%;
+  margin:0 auto;
+}
+.logo{
+  width:64px;height:64px;
+  background:linear-gradient(135deg,var(--primary),var(--secondary));
+  border-radius:18px;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 16px;font-size:28px;
+  box-shadow:0 8px 30px rgba(102,126,234,0.3);
+}
+.badge{
+  display:inline-block;
+  background:rgba(102,126,234,0.15);
+  color:#a78bfa;
+  padding:4px 12px;border-radius:20px;
+  font-size:10px;font-weight:700;letter-spacing:1px;
+  margin-bottom:12px;text-transform:uppercase;
+}
+h1{font-size:22px;font-weight:800;margin-bottom:6px;letter-spacing:-0.5px}
+.subtitle{color:var(--text2);font-size:13px;line-height:1.5;margin-bottom:24px}
+/* Single column on mobile, 2 cols on tablet+ */
+.features{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:24px}
+@media(min-width:420px){.features{grid-template-columns:1fr 1fr}}
+.feature{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:16px 14px;
+  text-align:center;
+  transition:all 0.2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.feature:active{transform:scale(0.97);background:rgba(255,255,255,0.08)}
+.feature-icon{font-size:24px;margin-bottom:8px}
+.feature-title{font-size:13px;font-weight:700;margin-bottom:2px}
+.feature-desc{font-size:11px;color:var(--text2);line-height:1.4}
+.cta{
+  display:flex;
+  align-items:center;justify-content:center;gap:8px;
+  width:100%;
+  background:linear-gradient(135deg,var(--primary),var(--secondary));
+  color:#fff;padding:14px 20px;border-radius:14px;
+  font-size:15px;font-weight:700;
+  text-decoration:none;
+  transition:all 0.2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.cta:active{transform:scale(0.97);opacity:0.9}
+.footer{text-align:center;padding:20px 0 0;font-size:10px;color:rgba(255,255,255,0.3)}
+</style>
+</head>
+<body>
+<div class="container" style="text-align:center">
+  <div class="logo">🚚</div>
+  <div class="badge">DELIVERY TRACKING</div>
+  <h1>GPS Tracker Bot</h1>
+  <p class="subtitle">Lacak lokasi kurir dan paket secara real-time via Telegram</p>
+  
+  <div class="features">
+    <div class="feature">
+      <div class="feature-icon">📦</div>
+      <div class="feature-title">Buat Link Tracking</div>
+      <div class="feature-desc">Link unik untuk setiap pengiriman</div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🔔</div>
+      <div class="feature-title">Notifikasi Otomatis</div>
+      <div class="feature-desc">Alert saat link dibuka target</div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🗺</div>
+      <div class="feature-title">Peta Real-time</div>
+      <div class="feature-desc">Lihat lokasi di Google Maps</div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">📊</div>
+      <div class="feature-title">Riwayat Lengkap</div>
+      <div class="feature-desc">Semua data tracking tersimpan</div>
+    </div>
+  </div>
+  
+  <a href="https://t.me/openflaredevbot" class="cta">
+    🤖 Mulai di Telegram
+  </a>
+  <div class="footer">Powered by Bansos Tracking System</div>
+</div>
+</body>
+</html>

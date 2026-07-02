@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Cek Bantuan Sosial</string>
+    <string name="loading">Memuat data...</string>
+    <string name="permission_required">Mohon izinkan akses kamera &amp; lokasi untuk verifikasi data</string>
+</resources>
