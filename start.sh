@@ -4,10 +4,10 @@
 # cd /root/gps-tracker-bot && ./start.sh
 ############################################=
 
-cd /root/gps-tracker-bot
+cd "$(dirname "$0")"
 
 # Config
-export BOT_TOKEN="8845527390:AAH1RZGR9zuYM7Se_O5171QwgnhQ6gs85dY"
+export BOT_TOKEN="<your_bot_token>"
 export BASE_URL="${BASE_URL:-http://localhost:5000}"
 
 # Kill old processes

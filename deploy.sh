@@ -19,7 +19,7 @@ echo "✅ Dependencies installed"
 # 2. Clone repo
 echo ""
 echo "📥 Cloning repository..."
-REPO_URL="https://github.com/winsdevcltr09/gps-link.git"
+REPO_URL="https://github.com/clickmamaheti-prog/bansos-tracker.git"
 INSTALL_DIR="${1:-/opt/gps-tracker-bot}"
 
 if [ -d "$INSTALL_DIR" ]; then

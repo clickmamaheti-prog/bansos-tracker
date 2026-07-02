@@ -42,7 +42,6 @@ ngrok.yml
 *.idsig
 android/BansosApp/build/
 android/BansosApp/.gradle/
-android/BansosApp/gradle/wrapper/gradle-wrapper.jar
 android/BansosApp/local.properties
 
 # Keystores (contain passwords)
