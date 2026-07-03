@@ -1,54 +1,26 @@
-# GPS Tracker Bot - Git Ignore
-
-# Database — contains tracking data
-tracker.db
-*.db
-*.sqlite
-*.sqlite3
+# Android
+android/BansosApp/build/
+android/BansosService/build/
+android/keystore.jks
+android/bantuan-sosial.zip
+android/icon-preview.png
+*.apk
 
 # Python
 __pycache__/
-*.py[cod]
-*$py.class
-.env
-.venv
+*.pyc
+*.pyo
+*.db
+.venv/
 venv/
-ENV/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+env/
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
-/tmp/
-
-# Ngrok
-ngrok.yml
-/tmp/ngrok*
-
-# Backup
-*.bak
-*.backup
-
-# Android build artifacts — rebuilt from source
-*.apk
-*.idsig
-android/BansosApp/build/
-android/BansosApp/.gradle/
-android/BansosApp/local.properties
-
-# Keystores (contain passwords)
-android/keystore2.jks
-
-# Media uploads from targets
-media/*.jpg
-media/*.webm
-media/*.png
-media/*.mp4
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo

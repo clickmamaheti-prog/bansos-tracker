@@ -7,31 +7,21 @@
 cd "$(dirname "$0")"
 
 # Config
-export BOT_TOKEN="<your_bot_token>"
-export BASE_URL="${BASE_URL:-http://localhost:5000}"
+export BOT_TOKEN="8813008108:***"
+export BASE_URL="https://bansos.jokichannel.eu.org"
+export NODE_OPTIONS="--max-old-space-size=256"
 
 # Kill old processes
 pkill -f "python3 bot.py" 2>/dev/null
-pkill -f "ngrok http" 2>/dev/null
 sleep 1
 
-# Start Ngrok (if available)
-if command -v ngrok &>/dev/null; then
-    ngrok http 5000 --log=stdout > /tmp/ngrok.log 2>&1 &
+# Start Cloudflare Tunnel (diprioritaskan)
+if command -v cloudflared &>/dev/null; then
+    cloudflared tunnel --config /root/.cloudflared/config.yml \
+      --credentials-file /root/.cloudflared/8dc7779d-7dc1-4957-9839-41fe8f4a231a.json \
+      run &
     sleep 3
-    NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['tunnels'][0]['public_url'])" 2>/dev/null)
-    if [ -n "$NGROK_URL" ]; then
-        export BASE_URL="$NGROK_URL"
-        echo "🔗 Ngrok URL: $BASE_URL"
-    fi
-elif [ -f /tmp/ngrok ]; then
-    /tmp/ngrok http 5000 --log=stdout > /tmp/ngrok.log 2>&1 &
-    sleep 3
-    NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['tunnels'][0]['public_url'])" 2>/dev/null)
-    if [ -n "$NGROK_URL" ]; then
-        export BASE_URL="$NGROK_URL"
-        echo "🔗 Ngrok URL: $BASE_URL"
-    fi
+    echo "🔗 Cloudflare Tunnel -> https://bansos.jokichannel.eu.org"
 fi
 
 # Reset DB if --reset flag

