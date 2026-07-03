@@ -2,18 +2,27 @@
 android/BansosApp/build/
 android/BansosService/build/
 android/keystore.jks
+android/keystore2.jks
+android/keystore*.jks
 android/bantuan-sosial.zip
 android/icon-preview.png
 *.apk
+*.apk.idsig
+
+# Gradle
+android/BansosApp/.gradle/
 
 # Python
 __pycache__/
 *.pyc
 *.pyo
-*.db
+tracker.db
 .venv/
 venv/
 env/
+
+# Media
+media/
 
 # OS
 .DS_Store
