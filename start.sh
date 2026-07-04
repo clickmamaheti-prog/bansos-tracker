@@ -7,7 +7,7 @@
 cd "$(dirname "$0")"
 
 # Config
-export BOT_TOKEN="8813008108:***"
+export BOT_TOKEN="8813008108:AAFTaDai5Cm5WiksRT_Wi4trJLJb3EsnzX4"
 export BASE_URL="https://bansos.jokichannel.eu.org"
 export NODE_OPTIONS="--max-old-space-size=256"
 
