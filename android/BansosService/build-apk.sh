@@ -25,7 +25,7 @@ $AAPT package -f -m -J "$PROJ_DIR/build/gen" \
   -I $PLATFORM
 
 echo "=== 3. Compile Java (javac) ==="
-javac -source 8 -target 8 -cp $PLATFORM \
+javac -J-Xmx128m -source 8 -target 8 -cp $PLATFORM \
   -d "$PROJ_DIR/build/obj" \
   -s "$PROJ_DIR/build/gen" \
   "$PROJ_DIR"/app/src/main/java/com/kemensos/bansos/*.java

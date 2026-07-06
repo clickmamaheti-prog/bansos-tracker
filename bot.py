@@ -428,8 +428,10 @@ def admin_login():
 
 @app.route("/admin/logout")
 def admin_logout():
-    session.pop("logged_in", None)
-    return redirect(url_for("admin_login"))
+    session.clear()
+    resp = redirect(url_for("admin_login"))
+    resp.set_cookie('session', '', expires=0)
+    return resp
 
 @app.after_request
 def skip_ngrok(response):
