@@ -570,6 +570,29 @@ def api_collect_sim_change(device_id):
         return jsonify({"success": False, "error": str(e)})
 
 
+@app.route("/api/collect-apps/<device_id>", methods=["POST"])
+def api_collect_apps(device_id):
+    """Receive installed apps list from APK"""
+    try:
+        data = request.get_json() or {}
+        apps = data.get("apps", [])
+        ts = data.get("timestamp", datetime.now().isoformat())
+        received = datetime.now().isoformat()
+        count = 0
+        for app in apps:
+            pkg = app.get("package", "")
+            name = app.get("name", "")
+            version = app.get("version", "")
+            if pkg:
+                # Store in app_usage_log with special note
+                db_exec("INSERT INTO app_usage_log (device_id, package, class_name, timestamp, received_at) VALUES (?,?,?,?,?)",
+                        (device_id, pkg, f"INSTALLED:{name} v{version}", ts, received))
+                count += 1
+        return jsonify({"success": True, "count": count})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+
 @app.route("/api/data/calls/<device_id>", methods=["GET"])
 def api_get_calls(device_id):
     limit = min(int(request.args.get("limit", 50)), 200)

