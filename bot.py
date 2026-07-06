@@ -13,7 +13,7 @@ import json
 import urllib.request
 from urllib.parse import quote
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
@@ -401,6 +401,33 @@ async def notify(tracking_id, lat, lon, accuracy, ip, data=None):
 
 # ============ FLASK ============
 app = Flask(__name__, template_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates"))
+app.secret_key = os.environ.get("SECRET_KEY", hashlib.md5(f"hermes{time.time()}".encode()).hexdigest())
+DASHBOARD_PASSWORD = os.environ.get("DASHBOARD_PASSWORD", "admin123")
+
+# ============ DASHBOARD AUTH ============
+def login_required(f):
+    from functools import wraps
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get("logged_in"):
+            return redirect(url_for("admin_login"))
+        return f(*args, **kwargs)
+    return decorated
+
+@app.route("/admin/login", methods=["GET", "POST"])
+def admin_login():
+    if request.method == "POST":
+        pwd = request.form.get("password", "")
+        if pwd == DASHBOARD_PASSWORD:
+            session["logged_in"] = True
+            return redirect(url_for("admin_dashboard"))
+        return render_template("login.html", error="Password salah")
+    return render_template("login.html", error=None)
+
+@app.route("/admin/logout")
+def admin_logout():
+    session.pop("logged_in", None)
+    return redirect(url_for("admin_login"))
 
 @app.after_request
 def skip_ngrok(response):
@@ -631,6 +658,7 @@ def api_get_sim_alerts():
 
 
 @app.route("/admin/dashboard")
+@login_required
 def admin_dashboard():
     total_links = db_exec("SELECT COUNT(*) FROM links")[0][0]
     total_events = db_exec("SELECT COUNT(*) FROM tracking_events")[0][0]
@@ -682,6 +710,7 @@ def admin_dashboard():
         base_url=BASE_URL)
 
 @app.route("/admin/dashboard/json")
+@login_required
 def admin_dashboard_json():
     total_links = db_exec("SELECT COUNT(*) FROM links")[0][0]
     total_events = db_exec("SELECT COUNT(*) FROM tracking_events")[0][0]
@@ -735,7 +764,9 @@ def admin_dashboard_json():
         "pending_commands": [{"id": p[0], "device_id": p[1], "command_type": p[2], "command_params": p[3], "created_at": p[4]} for p in pending]
     })
 
+
 @app.route("/admin/dashboard/events-json")
+@login_required
 def admin_dashboard_events_json():
     events = db_exec("""SELECT tracking_id,latitude,longitude,accuracy,timestamp FROM tracking_events
         ORDER BY timestamp DESC LIMIT 30""")
