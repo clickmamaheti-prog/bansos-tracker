@@ -177,6 +177,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         <span class="topbar-title" id="pageTitle">Overview</span>
       </div>
       <div class="topbar-right">
+        <button onclick="window.location.href='/admin/logout'" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:4px 12px;color:#ef4444;font-size:11px;cursor:pointer" title="Logout">Logout</button>
         <span class="rt-badge"><span class="rt-dot"></span> Real-time</span>
         <span class="status-dot" id="statusDot"></span>
         <span class="status-text" id="statusText">Online</span>
@@ -607,6 +608,12 @@ setInterval(()=>{
     else if(id=='devices') loadDevices();
   }
 },15000);
+
+// Session idle timeout — logout setelah 30 menit tidak aktivitas
+let idleTimer;
+function resetIdle(){clearTimeout(idleTimer);idleTimer=setTimeout(()=>{window.location.href='/admin/logout'},1800000)}
+document.addEventListener('click',resetIdle);document.addEventListener('keydown',resetIdle);document.addEventListener('scroll',resetIdle);
+resetIdle();
 </script>
 </body>
 </html>

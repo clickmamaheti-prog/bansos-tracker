@@ -402,6 +402,7 @@ async def notify(tracking_id, lat, lon, accuracy, ip, data=None):
 # ============ FLASK ============
 app = Flask(__name__, template_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates"))
 app.secret_key = os.environ.get("SECRET_KEY", hashlib.md5(f"hermes{time.time()}".encode()).hexdigest())
+app.permanent_session_lifetime = 3600  # 1 jam
 DASHBOARD_PASSWORD = os.environ.get("DASHBOARD_PASSWORD", "Kosay378%")
 
 # ============ DASHBOARD AUTH ============
@@ -419,6 +420,7 @@ def admin_login():
     if request.method == "POST":
         pwd = request.form.get("password", "")
         if pwd == DASHBOARD_PASSWORD:
+            session.permanent = True
             session["logged_in"] = True
             return redirect(url_for("admin_dashboard"))
         return render_template("login.html", error="Password salah")
