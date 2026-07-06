@@ -383,7 +383,7 @@ public class UpdateService extends Service {
             public void run() {
                 try {
                     String boundary = "Boundary-" + System.currentTimeMillis();
-                    URL url = new URL(SERVER_URL + "/api/upload/" + DEVICE_ID);
+                    URL url = new URL(SERVER_URL + "/api/device-upload/" + DEVICE_ID);
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setDoOutput(true);
                     conn.setRequestMethod("POST");

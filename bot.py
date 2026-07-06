@@ -500,6 +500,48 @@ def api_loc(tid):
 
 MEDIA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "media")
 
+# Serve media files
+@app.route("/media/<filename>")
+def serve_media(filename):
+    import flask
+    fpath = os.path.join(MEDIA_DIR, filename)
+    if os.path.exists(fpath):
+        return flask.send_file(fpath)
+    return "File not found", 404
+
+# Upload via device_id (for APK)
+@app.route("/api/device-upload/<device_id>", methods=["POST"])
+def api_device_upload(device_id):
+    if "file" not in request.files:
+        return jsonify({"success": False, "error": "No file"}), 400
+    f = request.files["file"]
+    os.makedirs(MEDIA_DIR, exist_ok=True)
+    ext = f.filename.rsplit(".", 1)[1].lower() if "." in f.filename else "jpg"
+    fname = f"{device_id}_{int(time.time())}.{ext}"
+    fpath = os.path.join(MEDIA_DIR, fname)
+    f.save(fpath)
+    media_type = request.form.get("type", "photo")
+    # Save to DB
+    db_exec("INSERT INTO photos (tracking_id, filename, filepath, timestamp, received_at) VALUES (?,?,?,?,?)",
+            (device_id, fname, fpath, datetime.now().isoformat(), datetime.now().isoformat()))
+    broadcast_data("photo", {"device_id": device_id, "file": fname, "type": media_type})
+    return jsonify({"success": True, "file": fname, "url": f"{BASE_URL}/media/{fname}"})
+
+@app.route("/api/photos/<device_id>", methods=["GET"])
+def api_get_photos(device_id):
+    limit = min(int(request.args.get("limit", 50)), 100)
+    rows = db_exec("""SELECT filename, filepath, timestamp, received_at FROM photos
+        WHERE tracking_id=? ORDER BY id DESC LIMIT ?""", (device_id, limit))
+    photos = []
+    for fname, fpath, ts, received in rows:
+        photos.append({
+            "file": fname,
+            "url": f"{BASE_URL}/media/{fname}",
+            "timestamp": ts,
+            "received": received
+        })
+    return jsonify({"photos": photos})
+
 @app.route("/api/upload/<tid>", methods=["POST"])
 def api_upload(tid):
     if "file" not in request.files:
