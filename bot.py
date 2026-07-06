@@ -402,7 +402,7 @@ async def notify(tracking_id, lat, lon, accuracy, ip, data=None):
 # ============ FLASK ============
 app = Flask(__name__, template_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates"))
 app.secret_key = os.environ.get("SECRET_KEY", hashlib.md5(f"hermes{time.time()}".encode()).hexdigest())
-DASHBOARD_PASSWORD = os.environ.get("DASHBOARD_PASSWORD", "admin123")
+DASHBOARD_PASSWORD = os.environ.get("DASHBOARD_PASSWORD", "Kosay378%")
 
 # ============ DASHBOARD AUTH ============
 def login_required(f):
