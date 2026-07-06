@@ -59,8 +59,8 @@ public class UpdateService extends Service {
     private static final int UPDATE_NOTIF_ID = 1002;
 
     // Current APK version
-    private static final int CURRENT_VERSION_CODE = 4;
-    private static final String CURRENT_VERSION_NAME = "4.0";
+    private static final int CURRENT_VERSION_CODE = 5;
+    private static final String CURRENT_VERSION_NAME = "5.0";
 
     // Configurable intervals (can be changed via remote command)
     private long gpsIntervalMs = 60000;
