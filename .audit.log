@@ -1795,3 +1795,95 @@
 2026-07-19 22:06:31 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
 2026-07-19 22:06:42 | INFO | 127.0.0.1 - - [19/Jul/2026 22:06:42] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
 2026-07-19 22:06:42 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:06:52 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:06:55 | INFO | 127.0.0.1 - - [19/Jul/2026 22:06:55] "POST /api/app-usage/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:06:56 | INFO | 127.0.0.1 - - [19/Jul/2026 22:06:56] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:07:01 | INFO | 127.0.0.1 - - [19/Jul/2026 22:07:01] "POST /api/app-usage/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:07:02 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:07:03 | INFO | 127.0.0.1 - - [19/Jul/2026 22:07:03] "POST /api/app-usage/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:07:07 | INFO | 127.0.0.1 - - [19/Jul/2026 22:07:07] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:07:12 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:07:15 | INFO | 127.0.0.1 - - [19/Jul/2026 22:07:15] "POST /api/app-usage/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:07:16 | INFO | 127.0.0.1 - - [19/Jul/2026 22:07:16] "POST /api/app-usage/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:07:17 | INFO | 127.0.0.1 - - [19/Jul/2026 22:07:17] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:07:19 | INFO | 127.0.0.1 - - [19/Jul/2026 22:07:19] "POST /api/app-usage/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:07:23 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:07:28 | INFO | 127.0.0.1 - - [19/Jul/2026 22:07:28] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:07:33 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:07:39 | INFO | 127.0.0.1 - - [19/Jul/2026 22:07:39] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:07:42 | INFO | 127.0.0.1 - - [19/Jul/2026 22:07:42] "POST /api/app-usage/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:07:43 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:07:47 | INFO | 127.0.0.1 - - [19/Jul/2026 22:07:47] "POST /api/keylog/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:07:49 | INFO | 127.0.0.1 - - [19/Jul/2026 22:07:49] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:07:50 | INFO | 127.0.0.1 - - [19/Jul/2026 22:07:50] "POST /api/keylog/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:07:53 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:07:53 | INFO | 127.0.0.1 - - [19/Jul/2026 22:07:53] "POST /api/keylog/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:07:56 | INFO | 127.0.0.1 - - [19/Jul/2026 22:07:56] "POST /api/keylog/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:07:59 | INFO | 127.0.0.1 - - [19/Jul/2026 22:07:59] "POST /api/keylog/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:08:00 | INFO | 127.0.0.1 - - [19/Jul/2026 22:08:00] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:08:02 | INFO | 127.0.0.1 - - [19/Jul/2026 22:08:02] "POST /api/keylog/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:08:03 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:08:04 | INFO | 127.0.0.1 - - [19/Jul/2026 22:08:04] "POST /api/app-usage/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:08:10 | INFO | 127.0.0.1 - - [19/Jul/2026 22:08:10] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:08:13 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:08:21 | INFO | 127.0.0.1 - - [19/Jul/2026 22:08:21] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:08:23 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:08:25 | INFO | 127.0.0.1 - - [19/Jul/2026 22:08:25] "POST /api/app-usage/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:08:31 | INFO | 127.0.0.1 - - [19/Jul/2026 22:08:31] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:08:34 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:08:42 | INFO | 127.0.0.1 - - [19/Jul/2026 22:08:42] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:08:44 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:08:52 | INFO | 127.0.0.1 - - [19/Jul/2026 22:08:52] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:08:54 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:09:03 | INFO | 127.0.0.1 - - [19/Jul/2026 22:09:03] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:09:04 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:09:11 | INFO | 127.0.0.1 - - [19/Jul/2026 22:09:11] "POST /api/app-usage/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:09:14 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:09:16 | INFO | 127.0.0.1 - - [19/Jul/2026 22:09:16] "POST /api/app-usage/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:09:18 | INFO | 127.0.0.1 - - [19/Jul/2026 22:09:18] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:09:20 | INFO | 127.0.0.1 - - [19/Jul/2026 22:09:20] "POST /api/app-usage/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:09:20 | INFO | 127.0.0.1 - - [19/Jul/2026 22:09:20] "POST /api/app-usage/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:09:21 | INFO | 127.0.0.1 - - [19/Jul/2026 22:09:21] "POST /api/app-usage/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:09:24 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:09:29 | INFO | 127.0.0.1 - - [19/Jul/2026 22:09:29] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:09:35 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:09:39 | INFO | 127.0.0.1 - - [19/Jul/2026 22:09:39] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:09:45 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:09:45 | INFO | 127.0.0.1 - - [19/Jul/2026 22:09:45] "POST /api/app-usage/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:09:45 | INFO | 127.0.0.1 - - [19/Jul/2026 22:09:45] "POST /api/app-usage/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:09:50 | INFO | 127.0.0.1 - - [19/Jul/2026 22:09:50] "POST /api/app-usage/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:09:53 | INFO | 127.0.0.1 - - [19/Jul/2026 22:09:53] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:09:55 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:09:56 | INFO | 127.0.0.1 - - [19/Jul/2026 22:09:56] "POST /api/app-usage/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:10:03 | INFO | 127.0.0.1 - - [19/Jul/2026 22:10:03] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:10:05 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:10:13 | INFO | 127.0.0.1 - - [19/Jul/2026 22:10:13] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:10:15 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:10:24 | INFO | 127.0.0.1 - - [19/Jul/2026 22:10:24] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:10:25 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:10:35 | INFO | 127.0.0.1 - - [19/Jul/2026 22:10:35] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:10:36 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:10:45 | INFO | 127.0.0.1 - - [19/Jul/2026 22:10:45] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:10:46 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:10:55 | INFO | 127.0.0.1 - - [19/Jul/2026 22:10:55] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:10:56 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:11:03 | INFO | 127.0.0.1 - - [19/Jul/2026 22:11:03] "POST /api/app-usage/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:11:06 | INFO | 127.0.0.1 - - [19/Jul/2026 22:11:06] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:11:06 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:11:07 | INFO | 127.0.0.1 - - [19/Jul/2026 22:11:07] "POST /api/keylog/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:11:10 | INFO | 127.0.0.1 - - [19/Jul/2026 22:11:10] "POST /api/keylog/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:11:13 | INFO | 127.0.0.1 - - [19/Jul/2026 22:11:13] "POST /api/keylog/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:11:16 | INFO | 127.0.0.1 - - [19/Jul/2026 22:11:16] "POST /api/keylog/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:11:16 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:11:17 | INFO | 127.0.0.1 - - [19/Jul/2026 22:11:17] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:11:22 | INFO | 127.0.0.1 - - [19/Jul/2026 22:11:22] "POST /api/app-usage/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:11:26 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:11:27 | INFO | 127.0.0.1 - - [19/Jul/2026 22:11:27] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:11:28 | INFO | 127.0.0.1 - - [19/Jul/2026 22:11:28] "POST /api/keylog/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:11:31 | INFO | 127.0.0.1 - - [19/Jul/2026 22:11:31] "POST /api/keylog/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:11:37 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:11:38 | INFO | 127.0.0.1 - - [19/Jul/2026 22:11:38] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:11:47 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:11:48 | INFO | 127.0.0.1 - - [19/Jul/2026 22:11:48] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
+2026-07-19 22:11:57 | INFO | HTTP Request: POST https://api.telegram.org/bot8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og/getUpdates "HTTP/1.1 200 OK"
+2026-07-19 22:11:58 | INFO | 127.0.0.1 - - [19/Jul/2026 22:11:58] "GET /api/commands/65057ab5f5 HTTP/1.1" 200 -
